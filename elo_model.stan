@@ -18,7 +18,7 @@ transformed parameters {
   // E_white = 1 / (1 + 10^((R_black - R_white) / 400))
   for (n in 1:N) {
     real rating_diff = rating[black[n]] - rating[white[n]];
-    expected_score[n] = inv_logit(rating_diff * log(10) / 400);
+    expected_score[n] = inv_logit((-1)*rating_diff * log(10) / 400);
   }
 }
 
