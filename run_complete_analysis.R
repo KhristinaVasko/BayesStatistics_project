@@ -9,6 +9,9 @@ library(bayesplot)
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 
+# Source preprocessing functions
+source("preprocessing.R")
+
 cat("========================================\n")
 cat("PART 1: TOURNAMENT RANKING ANALYSIS\n")
 cat("========================================\n\n")
@@ -23,9 +26,8 @@ games <- read_csv("games.csv", show_col_types = FALSE)
 cat("  Games loaded:", nrow(games), "\n")
 cat("  Columns:", paste(names(games), collapse = ", "), "\n\n")
 
-# Get unique engines
-all_engines <- unique(c(games$white, games$black))
-engine_names <- sort(all_engines)
+# Get unique engines using preprocessing.R function
+engine_names <- sort(get_players("games.csv"))
 n_engines <- length(engine_names)
 engine_to_idx <- setNames(1:n_engines, engine_names)
 
@@ -54,6 +56,18 @@ stan_data <- list(
 )
 
 cat("\n  Stan data prepared successfully!\n\n")
+
+# ==============================================================================
+# STEP 1.5: HEAD-TO-HEAD ANALYSIS
+# ==============================================================================
+
+cat("Step 1.5: Computing pairwise head-to-head statistics...\n")
+pair_results <- get_all_pair_results("games.csv")
+
+cat("  Computed results for", length(pair_results), "unique pairings\n")
+cat("  Sample pairwise result:\n")
+print(pair_results[[1]])
+cat("\n")
 
 # ==============================================================================
 # STEP 2: COMPILE AND RUN STAN MODEL
@@ -243,6 +257,6 @@ cat("  ✓ Saved: superiority_heatmap.png\n")
 # SAVE RESULTS
 # ==============================================================================
 
-save(rating_summary, superiority_matrix, games, stan_data,
+save(rating_summary, superiority_matrix, games, stan_data, pair_results,
      file = "part1_results.RData")
 saveRDS(fit, "part1_fit.rds")

@@ -21,7 +21,7 @@ count_results <- function(file_path, P1, P2) {
   
   # Loop through the games and count the results
   for (i in 1:nrow(games_of_interest)) {
-    result <- games_of_interest[i, 3]
+    result <- games_of_interest$result[i]
     
     if (result == "1-0" && games_of_interest[i, 1] == P1) {
       # P1 won
@@ -82,7 +82,3 @@ get_all_pair_results <- function(file_path) {
   # Return the list of results for all pairs
   return(pair_results)
 }
-
-
-results <- get_all_pair_results("games.csv")
-print(results)

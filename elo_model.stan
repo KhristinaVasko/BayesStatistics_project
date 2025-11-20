@@ -35,7 +35,7 @@ model {
 generated quantities {
   // Generate absolute ratings (centered at 2000)
   vector[K] rating_absolute = rating + 2000;
-  
+
   // Log-likelihood for model comparison
   vector[N] log_lik;
   for (n in 1:N) {
