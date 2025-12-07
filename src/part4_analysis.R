@@ -133,10 +133,10 @@ calculate_reject_prob <- function(posterior_mean, posterior_var, E_0) {
   return(pnorm(E_0, mean = posterior_mean, sd = sqrt(posterior_var)))
 }
 
-calculate_accept_prob <- function(posterior_mean, posterior_var, E_0) {
-  # P(Delta >= E_0 | data)
-  return(1 - calculate_reject_prob(posterior_mean, posterior_var, E_0))
+calculate_accept_prob <- function(posterior_mean, posterior_var, E_0){
+  return (1.0-calculate_reject_prob(posterior_mean, posterior_var, E_0))
 }
+
 
 # ==============================================================================
 # Main Sequential Testing Function
@@ -207,18 +207,21 @@ sequential_test <- function(data, engine1, engine2, E_0, alpha, beta) {
     posterior_mean <- posterior$mean
     posterior_var <- posterior$var
     
-    # Check rejection condition: P(Delta < E_0 | data) < alpha
-    # H_0: Delta >= E_0, so reject if we're confident Delta < E_0
+    # Calculate probabilities
     reject_prob <- calculate_reject_prob(posterior_mean, posterior_var, E_0)
-    if (reject_prob < alpha) {
+    accept_prob <- 1.0-reject_prob
+    
+    # Check rejection condition: Reject H_0 if P(Delta < E_0 | data) >= (1 - alpha)
+    # H_0: Delta >= E_0, so reject if we're confident Delta < E_0
+    # This means: reject if reject_prob >= (1 - alpha) = 0.95
+    if (reject_prob >= (1 - alpha)) {
       reject_or_accept_H0 <- TRUE
       decision <- "reject_H0"  # New engine is NOT significantly better (Delta < E_0)
     }
     
-    # Check acceptance condition: P(Delta >= E_0 | data) > beta
+    # Check acceptance condition: Accept H_0 if P(Delta >= E_0 | data) > beta
     # H_0: Delta >= E_0, so accept if we're confident Delta >= E_0
     if (!reject_or_accept_H0) {
-      accept_prob <- calculate_accept_prob(posterior_mean, posterior_var, E_0)
       if (accept_prob > beta) {
         reject_or_accept_H0 <- TRUE
         decision <- "accept_H0"  # New engine IS significantly better (Delta >= E_0)
@@ -239,7 +242,7 @@ sequential_test <- function(data, engine1, engine2, E_0, alpha, beta) {
     final_posterior_mean = posterior_mean,
     final_posterior_var = posterior_var,
     final_reject_prob = calculate_reject_prob(posterior_mean, posterior_var, E_0),
-    final_accept_prob = calculate_accept_prob(posterior_mean, posterior_var, E_0)
+    final_accept_prob = 1.0-final_reject_prob
   ))
 }
 
