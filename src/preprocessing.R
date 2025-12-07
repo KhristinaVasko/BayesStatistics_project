@@ -82,3 +82,59 @@ get_all_pair_results <- function(file_path) {
   # Return the list of results for all pairs
   return(pair_results)
 }
+
+get_engine_pairs <- function(data) {
+  # Get all unique engine pairs (both directions: A vs B and B vs A)
+  engines <- sort(unique(c(data$white, data$black)))
+  pairs <- list()
+  
+  # Create ordered pairs: for each pair (A, B), test both A vs B and B vs A
+  for (i in 1:(length(engines) - 1)) {
+    for (j in (i + 1):length(engines)) {
+      pairs[[length(pairs) + 1]] <- c(engines[i], engines[j])  # A vs B
+      pairs[[length(pairs) + 1]] <- c(engines[j], engines[i])  # B vs A
+    }
+  }
+  
+  return(pairs)
+}
+
+get_ordered_games <- function(data, engine1, engine2) {
+  # Get games between two engines in order they appear in CSV
+  # engine1 is treated as "new", engine2 as "base"
+  
+  # Add row number to preserve original order
+  data$row_num <- 1:nrow(data)
+  
+  # Filter games where the two engines play each other
+  filter_condition <- (data$white == engine1 & data$black == engine2) | 
+    (data$white == engine2 & data$black == engine1)
+  games <- data[filter_condition, ]
+  
+  # Preserve order by sorting by row_num
+  games <- games[order(games$row_num), ]
+  
+  # Add new columns
+  games$new_engine <- engine1
+  games$base_engine <- engine2
+  
+  # Determine result from "new" engine's perspective (engine1)
+  games$new_wins <- ifelse(
+    games$white == engine1 & games$result == "1-0", 1,      # new wins as white
+    ifelse(
+      games$black == engine1 & games$result == "0-1", 1,      # new wins as black
+      ifelse(
+        games$result == "1/2-1/2", 0.5,                      # draw
+        ifelse(
+          games$white == engine1 & games$result == "0-1", 0,  # new loses as white
+          ifelse(
+            games$black == engine1 & games$result == "1-0", 0, # new loses as black
+            NA  # default fallback (shouldn't happen)
+          )
+        )
+      )
+    )
+  )
+  
+  return(games)
+}
