@@ -11,20 +11,19 @@
   # get a list of game results between the two engines, in the order they appear in the .csv
   # number_of_games = length(game list)
 
-  # Initialize the Prior: Delta is normally distributed around mean 0, with variance 2*(200^2)
+  # Initialize the Prior:
+    #Delta is normally distributed around mean 0, with variance 2*(200^2)
+    #draw_rate is initialised as Beta(3,7), which has expecation 0.3
 
   #reject_or_accept_H0 = false  
   #k = 1
 
   #while (k <= number_of_games) or (reject_or_accept_H0 == false):
-    # Define the prior of step k to be the posterior after k-1 iterations, or the initialized prior if k=1   
-
     # Let r_k be the result of the k-th game.
-    # Calculate the likelihood of the cumulative results r_1, ..., r_k, given the prior at step k,
-    # using the expected score E(Delta) = P(new engine wins | Delta) + P(draw | Delta)
-    # (the expected score does not give information about the draw rate, so we model it as a Beta(3,7) distributed variable
 
-    # Update the Posterior (MCMC sampling using Stan)
+    # Using Stan, calculate the posterior for Delta and draw_rate:
+      # Calculate the likelihood of the cumulative results r_1, ..., r_k,
+      # using the expected score E(Delta) = P(new engine wins | Delta) + P(draw | Delta)
 
     # Reject H_0, if P(Delta < E_0 | r_1,...,r_k) < alpha
     # Accept H_0, if P(Delta >= E_0 | r_1,...,r_k) > beta
@@ -71,7 +70,7 @@ expected_score <- function(delta) {
 }
 
 update_posterior <- function(prior_mean, prior_var, results, 
-                             stan_model_obj = stan_model_seq, chains=2, iterations=1000, warmup=500) {
+                             stan_model_obj = stan_model_seq, chains=4, iterations=1000, warmup=500) {
   # Update posterior using Stan
   
   # Ensure results is a numeric vector (not scalar or data frame column)
@@ -170,37 +169,24 @@ sequential_test <- function(data, engine1, engine2, E_0, alpha, beta) {
   decision <- "undecided"
   k <- 1
   
-  # Store posterior at each step
-  posterior_mean <- prior_mean
-  posterior_var <- prior_var
-  
   while (k <= number_of_games && !reject_or_accept_H0) {
-    # Let r_k be the result of the k-th game
-    r_k <- results[k]
     
-    # Define the prior of step k to be the posterior after k-1 iterations
-    # (or the initialized prior if k=1)
-    if (k == 1) {
-      # First game: use initialized prior
-      current_prior_mean <- prior_mean
-      current_prior_var <- prior_var
-    } else {
-      # Use previous posterior as new prior
-      current_prior_mean <- posterior_mean
-      current_prior_var <- posterior_var
-    }
-    
-    # Ensure results_so_far is always a vector (not scalar when k=1)
+    # get cumulative results as vector
     results_so_far <- as.numeric(results[1:k])
     
     
-    # Calculate the likelihood of the cumulative results r_1, ..., r_k
-    # given the prior at step k
+    # Calculate the likelihood of the results r_1, ..., r_k
     # Update the Posterior using Stan MCMC
     # The model estimates both Delta and draw_rate simultaneously
     # draw_rate is estimated as a parameter (not fixed) with a Beta(3, 7) prior
-    posterior <- update_posterior(current_prior_mean, current_prior_var, 
-                                  results_so_far, stan_model_seq, chains=1, iterations=500, warmup=250)
+    posterior <- update_posterior(
+      prior_mean,
+      prior_var, 
+      results_so_far,
+      stan_model_seq,
+      chains=1,
+      iterations=1000,
+      warmup=500)
     posterior_mean <- posterior$mean
     posterior_var <- posterior$var
     
@@ -208,6 +194,7 @@ sequential_test <- function(data, engine1, engine2, E_0, alpha, beta) {
     reject_prob <- calculate_reject_H0_prob(posterior_mean, posterior_var, E_0)
     
     # Check reject/accept condition
+    # (We might consider not accepting/rejecting until a few games have been played)
     if (reject_prob >= (1 - alpha)) {
       reject_or_accept_H0 <- TRUE
       decision <- "reject_H0"  # New engine is NOT significantly better (Delta < E_0)
