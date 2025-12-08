@@ -260,8 +260,20 @@ for (pair in pairs) {
   result <- sequential_test(data, engine1, engine2, E_0, alpha, beta)
   results_list[[length(results_list) + 1]] <- result
   
+  # Calculate scores after games played and over all games
+  games <- get_ordered_games(data, engine1, engine2)
+  if (!is.null(games) && nrow(games) > 0) {
+    total_score_after_games_played <- sum(games$new_wins[1:result$games_played])
+    total_score_all_games <- sum(games$new_wins)
+  } else {
+    total_score_after_games_played <- NA_real_
+    total_score_all_games <- NA_real_
+  }
+  
   cat(sprintf("  Decision: %s\n", result$decision))
   cat(sprintf("  Games played: %d / %d\n", result$games_played, result$total_games_available))
+  cat(sprintf("  Total score after games played: %.f:%.f\n", total_score_after_games_played, result$games_played-total_score_after_games_played))
+  cat(sprintf("  Total score over all games: %.f:%.f\n", total_score_all_games, result$total_games_available- total_score_all_games))
   cat(sprintf("  Final posterior mean (Delta): %.2f\n", result$final_posterior_mean))
   cat(sprintf("  Final reject prob: %.4f\n", result$final_reject_prob))
   cat(sprintf("  Final accept prob: %.4f\n\n", result$final_accept_prob))
