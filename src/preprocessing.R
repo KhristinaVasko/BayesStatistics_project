@@ -111,6 +111,11 @@ get_ordered_games <- function(data, engine1, engine2) {
     (data$white == engine2 & data$black == engine1)
   games <- data[filter_condition, ]
   
+  #return Null, if no games found
+  if (nrow(games) == 0) {
+    return(NULL)
+  }
+  
   # Preserve order by sorting by row_num
   games <- games[order(games$row_num), ]
   
