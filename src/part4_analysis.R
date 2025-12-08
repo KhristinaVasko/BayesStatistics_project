@@ -17,10 +17,9 @@
   #k = 1
 
   #while (k <= number_of_games) or (reject_or_accept_H0 == false):
-    # Let r_k be the result of the k-th game.
-
     # Define the prior of step k to be the posterior after k-1 iterations, or the initialized prior if k=1   
 
+    # Let r_k be the result of the k-th game.
     # Calculate the likelihood of the cumulative results r_1, ..., r_k, given the prior at step k,
     # using the expected score E(Delta) = P(new engine wins | Delta) + P(draw | Delta)
     # (the expected score does not give information about the draw rate, so we model it as a Beta(3,7) distributed variable
@@ -46,8 +45,8 @@ source("src/preprocessing.R")
 #----------------------------------------
 
 E_0 <- 10 #improvement difference threshold (H_0: Delta >= E_0)
-alpha <- 0.05 #upper bound for rejecting H0 (reject if P(Delta < E_0) < alpha)
-beta <- 0.95 #lower bound for accepting H0 (accept if P(Delta >= E_0) > beta)
+alpha <- 0.05 #reject H0 if P(Delta < E_0) < alpha
+beta <- 0.95 #accept H0 if P(Delta >= E_0) > beta
 
 #----------------------------------------
 # Compile Stan Model
@@ -72,7 +71,7 @@ expected_score <- function(delta) {
 }
 
 update_posterior <- function(prior_mean, prior_var, results, 
-                             stan_model_obj = stan_model_seq) {
+                             stan_model_obj = stan_model_seq, chains=2, iterations=1000, warmup=500) {
   # Update posterior using Stan
   
   # Ensure results is a numeric vector (not scalar or data frame column)
@@ -95,15 +94,13 @@ update_posterior <- function(prior_mean, prior_var, results,
   )
   
   # Run MCMC sampling
-  # Use fewer iterations for sequential testing to speed up
-  # Since we're doing this many times in a loop
   # The model estimates both Delta and draw_rate simultaneously
   fit <- sampling(
     stan_model_obj,
     data = stan_data,
-    chains = 2,           # Reduced chains for speed
-    iter = 1000,          # Reduced iterations for speed
-    warmup = 500,
+    chains = chains,          
+    iter = iterations,          
+    warmup = warmup,
     refresh = 0,          
     control = list(adapt_delta = 0.8)
   )
@@ -123,20 +120,14 @@ update_posterior <- function(prior_mean, prior_var, results,
   return(list(mean = posterior_mean, var = posterior_var))
 }
 
-calculate_reject_prob <- function(posterior_mean, posterior_var, E_0) {
-  # Calculate probability that Delta < E_0 (i.e., reject H0 condition)
+calculate_reject_H0_prob <- function(posterior_mean, posterior_var, E_0) {
+  # Calculate P(Delta < E_0 | data) (i.e., probability of !H_0)
   # H_0: Delta >= E_0 (new engine is at least E_0 points better)
-  # Reject H_0 if P(Delta < E_0 | data) < alpha
   
   #pnorm: returns the value of the cdf of the normal distribution,
   # given the random variable E_0, the mean and stadard deviation of Delta.
   return(pnorm(E_0, mean = posterior_mean, sd = sqrt(posterior_var)))
 }
-
-calculate_accept_prob <- function(posterior_mean, posterior_var, E_0){
-  return (1.0-calculate_reject_prob(posterior_mean, posterior_var, E_0))
-}
-
 
 # ==============================================================================
 # Main Sequential Testing Function
@@ -144,7 +135,7 @@ calculate_accept_prob <- function(posterior_mean, posterior_var, E_0){
 
 sequential_test <- function(data, engine1, engine2, E_0, alpha, beta) {
   # Sequential test for engine comparison
-  # Delta = R_new - R_base (rating difference)
+  # Delta = R_new - R_base (rating difference), where engine1=new, engine2=base
   # H_0: Delta >= E_0 (null hypothesis: new engine is at least E_0 points better)
   # Reject H_0 if P(Delta < E_0 | data) < alpha
   # Accept H_0 if P(Delta >= E_0 | data) > beta
@@ -152,11 +143,17 @@ sequential_test <- function(data, engine1, engine2, E_0, alpha, beta) {
   # Get ordered games between the two engines
   games <- get_ordered_games(data, engine1, engine2)
   
-  if (nrow(games) == 0) {
+  if (is.null(games)) {
     return(list(
+      engine1 = engine1,
+      engine2 = engine2,
       decision = "no_games",
       games_played = 0,
-      final_posterior = NULL
+      total_games_available = 0,
+      final_posterior_mean = NA_real_,
+      final_posterior_var = NA_real_,
+      final_reject_prob = NA_real_,
+      final_accept_prob = NA_real_
     ))
   }
   
@@ -203,29 +200,20 @@ sequential_test <- function(data, engine1, engine2, E_0, alpha, beta) {
     # The model estimates both Delta and draw_rate simultaneously
     # draw_rate is estimated as a parameter (not fixed) with a Beta(3, 7) prior
     posterior <- update_posterior(current_prior_mean, current_prior_var, 
-                                  results_so_far, stan_model_seq)
+                                  results_so_far, stan_model_seq, chains=1, iterations=500, warmup=250)
     posterior_mean <- posterior$mean
     posterior_var <- posterior$var
     
-    # Calculate probabilities
-    reject_prob <- calculate_reject_prob(posterior_mean, posterior_var, E_0)
-    accept_prob <- 1.0-reject_prob
+    #calculate P(Delta < E_0 | data) (i.e., probability of !H_0)
+    reject_prob <- calculate_reject_H0_prob(posterior_mean, posterior_var, E_0)
     
-    # Check rejection condition: Reject H_0 if P(Delta < E_0 | data) >= (1 - alpha)
-    # H_0: Delta >= E_0, so reject if we're confident Delta < E_0
-    # This means: reject if reject_prob >= (1 - alpha) = 0.95
+    # Check reject/accept condition
     if (reject_prob >= (1 - alpha)) {
       reject_or_accept_H0 <- TRUE
       decision <- "reject_H0"  # New engine is NOT significantly better (Delta < E_0)
-    }
-    
-    # Check acceptance condition: Accept H_0 if P(Delta >= E_0 | data) > beta
-    # H_0: Delta >= E_0, so accept if we're confident Delta >= E_0
-    if (!reject_or_accept_H0) {
-      if (accept_prob > beta) {
-        reject_or_accept_H0 <- TRUE
-        decision <- "accept_H0"  # New engine IS significantly better (Delta >= E_0)
-      }
+    }else if(1.0-reject_prob >= beta){
+      reject_or_accept_H0 <- TRUE
+      decision <- "accept_H0"  # New engine IS significantly better (Delta >= E_0)
     }
     
     k <- k + 1
@@ -234,15 +222,13 @@ sequential_test <- function(data, engine1, engine2, E_0, alpha, beta) {
   return(list(
     engine1 = engine1,
     engine2 = engine2,
-    new_engine = games$new_engine[1],
-    base_engine = games$base_engine[1],
     decision = decision,
     games_played = k - 1,
     total_games_available = number_of_games,
     final_posterior_mean = posterior_mean,
     final_posterior_var = posterior_var,
-    final_reject_prob = calculate_reject_prob(posterior_mean, posterior_var, E_0),
-    final_accept_prob = 1.0-final_reject_prob
+    final_reject_prob = reject_prob,
+    final_accept_prob = 1.0-reject_prob
   ))
 }
 
@@ -269,7 +255,7 @@ for (pair in pairs) {
   engine1 <- pair[1]
   engine2 <- pair[2]
   
-  cat(sprintf("Testing pair: %s vs %s\n", engine1, engine2))
+  cat(sprintf("Testing pair: %s (=new engine) vs %s (=base engine)\n", engine1, engine2))
   
   result <- sequential_test(data, engine1, engine2, E_0, alpha, beta)
   results_list[[length(results_list) + 1]] <- result
@@ -283,16 +269,21 @@ for (pair in pairs) {
 
 # Convert results to data frame for easier analysis
 results_df <- do.call(rbind, lapply(results_list, function(r) {
+  # Handle NA values for variance (when no games were played)
+  delta_sd <- if (!is.na(r$final_posterior_var) && r$final_posterior_var > 0) {
+    sqrt(r$final_posterior_var)
+  } else {
+    NA_real_
+  }
+  
   data.frame(
-    engine1 = r$engine1,
-    engine2 = r$engine2,
-    new_engine = r$new_engine,
-    base_engine = r$base_engine,
+    new = r$engine1,
+    base = r$engine2,
     decision = r$decision,
     games_played = r$games_played,
     total_games = r$total_games_available,
     final_delta_mean = r$final_posterior_mean,
-    final_delta_sd = sqrt(r$final_posterior_var),
+    final_delta_sd = delta_sd,
     stringsAsFactors = FALSE
   )
 }))
