@@ -245,7 +245,6 @@ for (pair in pairs) {
   cat(sprintf("Testing pair: %s (=new engine) vs %s (=base engine)\n", engine1, engine2))
   
   result <- sequential_test(data, engine1, engine2, E_0, alpha, beta)
-  results_list[[length(results_list) + 1]] <- result
   
   # Calculate scores after games played and over all games
   games <- get_ordered_games(data, engine1, engine2)
@@ -256,6 +255,11 @@ for (pair in pairs) {
     total_score_after_games_played <- NA_real_
     total_score_all_games <- NA_real_
   }
+  
+  # Add scores to result object
+  result$total_score_after_games_played <- total_score_after_games_played
+  result$total_score_all_games <- total_score_all_games
+  results_list[[length(results_list) + 1]] <- result
   
   cat(sprintf("  Decision: %s\n", result$decision))
   cat(sprintf("  Games played: %d / %d\n", result$games_played, result$total_games_available))
@@ -280,9 +284,11 @@ results_df <- do.call(rbind, lapply(results_list, function(r) {
     base = r$engine2,
     decision = r$decision,
     games_played = r$games_played,
+    score = stringr::str_interp("${r$total_score_after_games_played}:${r$games_played-r$total_score_after_games_played}"),
     total_games = r$total_games_available,
-    final_delta_mean = r$final_posterior_mean,
-    final_delta_sd = delta_sd,
+    total_score = stringr::str_interp("${r$total_score_all_games}:${r$total_games_available-r$total_score_all_games}"),
+    posterior_delta_mean = r$final_posterior_mean,
+    posterior_delta_sd = delta_sd,
     stringsAsFactors = FALSE
   )
 }))
