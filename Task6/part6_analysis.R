@@ -65,3 +65,36 @@ games <- play.tournament(engines,
                          verbose = 1)
 
 pgn(games, file = pgn_filename)
+
+
+#To-do:
+
+# Step 2: Initial Modelling
+  #extract the game results from the .pgn and save them in "tournament_results.csv"
+  #run the Rating Model (Task 1) on the game results, with smaller variance
+  #extract mean rating \mu and standard deviation \sigma for each engine.
+  
+  #Fit the Gaussian Process:
+    #X: LMR_slope values.
+    #Y: Mean ratings.
+    #Noise: normally distributed around 0, with standard deviation \sigma
+
+  #plot the GP+data points
+
+# Step3: Optimization - repeat this step for either a fixed amount of repeats,
+    #or until the probability of improvement drops below a certain value
+
+  #Calculate the Expected Improvement (see lecture 8) 
+  #find x that maximizes the EI-function and initialize new engine with x LMRslope
+  #pick a diverse subset of the previous engines (e.g. the two best engines till now,
+    #the median engine and the worst engine) and let the new engine play games, eg.
+    # 15 rounds each against the best two engines, and 5 rounds against the median & worst
+    # (this would take approx. 80mins)
+  #add the games to the .pgn, and the scores to the .csv
+
+  # run the Rating Model (Task 1) on all game results
+  
+  # calculate and plot the new GP
+
+  # calculate the probability of improvement
+  
