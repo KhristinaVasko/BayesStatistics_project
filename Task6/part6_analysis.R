@@ -1,6 +1,7 @@
 library(Rschach)
 library(dplyr)
 library(tidyverse)
+library(ggplot2)
 
 # Output filenames
 pgn_filename <- "tournament_games.pgn"
@@ -166,19 +167,70 @@ run_elo_model <- function(results_csv, stan_model){
 
 D <- run_elo_model("tournament_results.csv", stanmodel)
 
-#To-do:
+#we need functionality to generate a GP with known noise
+#the library "GauPro" doesn't support this as far as I found out,
+#but the following library has built-in functions for this:
+#install.packages("DiceKriging")
+library(DiceKriging)
+kernel_type <- "gauss"
 
-# Step 2: Initial Modelling
-  #...
+# Fit the GP
+gp_model <- km(
+  design = data.frame(x = as.numeric(sub("E_", "", D$X))), 
+  response = D$Y, 
+  covtype = kernel_type, 
+  noise.var = D$epsilon^2,
+)
 
-  #Fit the Gaussian Process:
-    #X: LMR_slope values.
-    #Y: Mean ratings.
-    #Noise: normally distributed around 0, with standard deviation \sigma
-
-  #plot the GP+data points
+plot_gaussian_process <- function(gp, D, plot_output_name, iteration){
+  # Create a sequence of points and predict GP values
+  x_grid <- data.frame(x=seq(0, 2, length.out = 100))
+  pred <- predict(object=gp,
+                  newdata=x_grid,
+                  type = "UK") #type=universal kriging -> uncertainty in means
   
-  #--> we need functions to calculate the GP with noise. Use standard gauss kernel from lecture 7?!
+  # Calculate 95% Confidence Intervals
+  lower_bound <- pred$mean - 1.96 * pred$sd
+  upper_bound <- pred$mean + 1.96 * pred$sd
+  
+  # Combine all data into a dataframe for plotting
+  plot_data <- data.frame(
+    x = x_grid,
+    y = pred$mean,
+    lower = lower_bound,
+    upper = upper_bound
+  )
+  
+  # Original data points for reference
+  original_points <- data.frame(x = as.numeric(sub("E_", "", D$X)), y=D$Y)
+  
+  gp_plot <- ggplot(plot_data, aes(x = x, y = y)) +
+    # 1. Add the shaded confidence interval (95%)
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "lightblue", alpha = 0.5) +
+    
+    # 2. Add the GP mean prediction line
+    geom_line(color = "blue", linewidth = 1) +
+    
+    # 3. Add the original observed data points (Red dots)
+    geom_point(data = original_points, aes(x = x, y = y), color = "red", size = 3) +
+    
+    # Styling
+    labs(title = paste0("Gaussian Process Fit, iteration=", iteration),
+         subtitle = "LMR Slope vs. Estimated Elo Rating",
+         x = "LMR Slope Parameter",
+         y = "Rating (Elo)") +
+    theme_minimal()
+  
+   ggsave(filename = paste0(plot_output_name, ".png"), 
+         plot = gp_plot, 
+         width = 8, 
+         height = 6, 
+         dpi = 300)
+}
+
+plot_gaussian_process(gp_model, D, "initial_plot", 0)
+
+#To-do:
 
 # Step3: Optimization - repeat this step:
     #after every iteration, print out the expected improvement and ask the user if he wants to continue
