@@ -167,8 +167,8 @@ run_elo_model <- function(results_csv, stan_model){
 
 D <- run_elo_model("tournament_results.csv", stanmodel)
 
-#we need functionality to generate a GP with known noise
-#the library "GauPro" doesn't support this as far as I found out,
+#we need functionality to generate a GP with "known" noise
+#the library GauPro doesn't support this as far as I found out,
 #but the following library has built-in functions for this:
 #install.packages("DiceKriging")
 library(DiceKriging)
@@ -183,9 +183,24 @@ gp_model <- km(
   upper = 0.3 #upper bound for length-scale parameter
 )
 
-plot_gaussian_process <- function(gp, D, plot_output_name, iteration){
-  # Create a sequence of points and predict GP values
-  x_grid <- data.frame(x=seq(0, 2, length.out = 100))
+calculate_expected_improvement <- function(pred, y_best){
+  #pred = prediction of GP model for some points X
+  #returns expected improvement for points X
+  
+  mu <- pred$mean
+  sigma <- pred$sd
+  sigma <- pmax(sigma, 1e-9) # avoid division by zero
+
+  # Calculate Expected Improvement
+  Z <- (mu - y_best) / sigma
+  # Formula: (mu - y_best) * Phi(Z) + sigma * phi(Z)
+  ei <- (mu - y_best) * pnorm(Z) + sigma * dnorm(Z)
+  
+  return(ei)
+}
+
+plot_gaussian_process <- function(gp, D, x_grid, plot_output_name, iteration){
+  # Predict GP values for sequence of points x_grid
   pred <- predict(object=gp,
                   newdata=x_grid,
                   type = "UK") #type=universal kriging -> uncertainty in means
@@ -194,12 +209,27 @@ plot_gaussian_process <- function(gp, D, plot_output_name, iteration){
   lower_bound <- pred$mean - 1.96 * pred$sd
   upper_bound <- pred$mean + 1.96 * pred$sd
   
+  # Calculate Expected Improvement for the same grid
+  ei_values <- calculate_expected_improvement(pred, max(D$Y))
+  # EI values are small (e.g., 0-10), while Ratings are large (e.g., 2000).
+  # We scale EI up to fit visually on the plot.
+  ylim_primary <- range(c(lower_bound, upper_bound, D$Y))
+  plot_height  <- diff(ylim_primary)
+  max_ei       <- max(ei_values)
+  # Prevent scaling error if max_ei is 0
+  if(max_ei == 0) max_ei <- 1 
+  # Scale factor: stretches EI to occupy roughly 20% of the plot height
+  scale_factor <- (plot_height * 0.5) / max_ei 
+  # Shift factor: moves the EI line to the bottom of the rating graph
+  shift_factor <- min(lower_bound)
+  
   # Combine all data into a dataframe for plotting
   plot_data <- data.frame(
     x = x_grid,
     y = pred$mean,
     lower = lower_bound,
-    upper = upper_bound
+    upper = upper_bound,
+    ei_scaled = (ei_values * scale_factor) + shift_factor
   )
   
   # Original data points for reference
@@ -215,6 +245,9 @@ plot_gaussian_process <- function(gp, D, plot_output_name, iteration){
     # 3. Add the original observed data points (Red dots)
     geom_point(data = original_points, aes(x = x, y = y), color = "red", size = 3) +
     
+    # 4. Expected Improvement
+    geom_line(aes(y = ei_scaled), color = "red", linewidth = 1, linetype = "dashed") +
+    
     # Styling
     labs(title = paste0("Gaussian Process Fit, iteration=", iteration),
          subtitle = "LMR Slope vs. Estimated Elo Rating",
@@ -229,7 +262,13 @@ plot_gaussian_process <- function(gp, D, plot_output_name, iteration){
          dpi = 300)
 }
 
-plot_gaussian_process(gp_model, D, "initial_plot", 0)
+x_grid <- data.frame(x=seq(0, 2, length.out = 100))
+plot_gaussian_process(gp_model, D, x_grid, "initial_plot", 0)
+
+
+# -----------------------------------
+# Step 3: Optimization loop
+# -----------------------------------
 
 #To-do:
 

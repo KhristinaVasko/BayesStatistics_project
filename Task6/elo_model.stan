@@ -27,12 +27,11 @@ model {
 
   // Likelihood
   for (n in 1:N) {
-    // Math here is now simpler/faster
     real p_win_raw = E[n] - 0.5 * draw_rate;
     real p_loss_raw = 1.0 - E[n] - 0.5 * draw_rate;
 
-    real p_win = fmax(1e-6, p_win_raw);
-    real p_loss = fmax(1e-6, p_loss_raw);
+    real p_win = fmax(0.001, p_win_raw);
+    real p_loss = fmax(0.001, p_loss_raw);
     real total = p_win + draw_rate + p_loss;
 
     if (score[n] == 1.0)      target += log(p_win / total);
