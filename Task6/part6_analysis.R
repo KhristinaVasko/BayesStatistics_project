@@ -1,4 +1,6 @@
 library(Rschach)
+library(dplyr)
+library(tidyverse)
 
 # Output filenames
 pgn_filename <- "tournament_games.pgn"
@@ -94,26 +96,91 @@ write.csv(results_df, csv_filename, row.names = FALSE, quote = FALSE)
 # 4	E_1.5	11.5 - 38.5   15.0 - 35.0   24.0 - 26.0   28.0 - 22.0			  **		78.5/200
 # 5	E_2	  11.0 - 39.0   10.0 - 40.0   13.0 - 37.0   22.0 - 28.0				  **	56.0/200
 
+#current "best engine" beats the current weakest engine approximately 4-1,
+#which suggests a rating difference of ~240 elo points.
+#--> for rating modelling, we could choose the prior to have
+#    standard deviation e.g. 150, but 200 as in Task 1 should also be fine
+
 
 # -----------------------------------
-# Step 2: Initial Modelling (Bayesian Elo + Gaussian Process)
+# Step 2: Initial Modelling
 # -----------------------------------
+
+#We first run the rating model from task 1 on the tournament results,
+#obtaining data X = {0, 0.5, 1.0, 1.5, 2.0}, Y = {\mu(E_0), \mu(E_0.5), ..., \mu(E_2)}
+#with noise \epsilon = {sd(E_0), sd(E_0.5), ..., sd(E_2)} (sd = standard deviation)
+
+#load and compile stan model from part 1
+library(rstan)
+options(mc.cores = parallel::detectCores())
+rstan_options(auto_write = TRUE)
+stanmodel <- stan_model("elo_model.stan") #slightly modified model from task 1
+source("../src/preprocessing.R")
+
+#returns dataframe with columns X (=engine names), Y (=mean rating), epsilon (=sd)
+run_elo_model <- function(results_csv, stan_model){
+
+  # ...(code from task 1, slightly modified)
+
+  games <- read_csv(results_csv, show_col_types = FALSE)
+  engine_names <- sort(get_players(results_csv))
+  n_engines <- length(engine_names)
+  engine_to_idx <- setNames(1:n_engines, engine_names)
+  games <- games %>%
+    mutate(
+      white_score = case_when(
+        result == "1-0" ~ 1.0,
+        result == "1/2-1/2" ~ 0.5,
+        result == "0-1" ~ 0.0
+      ),
+      white_idx = engine_to_idx[white],
+      black_idx = engine_to_idx[black]
+    )
+  stan_data <- list(
+    N = nrow(games),
+    K = n_engines,
+    white = games$white_idx,
+    black = games$black_idx,
+    score = games$white_score
+  )
+  cat("Running MCMC sampling...\n")
+  fit <- sampling(
+    stan_model,
+    data = stan_data,
+    chains = 4,
+    iter = 4000,
+    warmup = 2000,
+    control = list(adapt_delta = 0.95)
+  )
+  
+  #Use rstan::extract to avoid conflict with tidyr
+  rating_samples <- rstan::extract(fit, pars = "rating_absolute")$rating_absolute
+  rating_summary <- data.frame(
+    X = engine_names,
+    Y = colMeans(rating_samples),
+    epsilon = apply(rating_samples, 2, sd)
+  )
+  
+  return(rating_summary)
+}
+
+D <- run_elo_model("tournament_results.csv", stanmodel)
 
 #To-do:
 
 # Step 2: Initial Modelling
-  #run the Rating Model (Task 1) on the game results, with smaller variance
-  #extract mean rating \mu and standard deviation \sigma for each engine.
-  
+  #...
+
   #Fit the Gaussian Process:
     #X: LMR_slope values.
     #Y: Mean ratings.
     #Noise: normally distributed around 0, with standard deviation \sigma
 
   #plot the GP+data points
+  
+  #--> we need functions to calculate the GP with noise. Use standard gauss kernel from lecture 7?!
 
-# Step3: Optimization - repeat this step for either a fixed amount of repeats,
-    #or until the probability of improvement drops below a certain value
+# Step3: Optimization - repeat this step:
     #after every iteration, print out the expected improvement and ask the user if he wants to continue
 
   #Calculate the Expected Improvement (see lecture 8) 
