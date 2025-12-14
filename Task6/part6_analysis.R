@@ -64,13 +64,44 @@ games <- play.tournament(engines,
                          tc_inc = TC_INC*1000,
                          verbose = 1)
 
+################
+# Create pgn and save results to .csv file
+################
 pgn(games, file = pgn_filename)
 
+lines <- readLines(pgn_filename)
+# Extract fields
+whites  <- gsub('\\[White "|"\\]', "", grep('\\[White ".*"\\]', lines, value = TRUE))
+blacks  <- gsub('\\[Black "|"\\]', "", grep('\\[Black ".*"\\]', lines, value = TRUE))
+results <- gsub('\\[Result "|"\\]', "", grep('\\[Result ".*"\\]', lines, value = TRUE))
+tc_val <- paste0(TC_BASE, "+", TC_INC)
+time_controls <- rep(tc_val, length(results))
+# Create dataframe with columns: white, black, result, timecontrol
+results_df <- data.frame(
+  white = whites, 
+  black = blacks, 
+  result = results, 
+  timecontrol = time_controls, 
+  stringsAsFactors = FALSE
+)
+write.csv(results_df, csv_filename, row.names = FALSE, quote = FALSE)
+
+#tournament results (table generated with chessbase)
+#     1	       2	           3	           4	           5	
+# 1	E_0.5	27.0 - 23.0   31.0 - 19.0   38.5 - 11.5   39.0 - 11.0 **					135.5/200
+# 2	E_0	  23.0 - 27.0   30.5 - 19.5   35.0 - 15.0   40.0 - 10.0	  **				128.5/200
+# 3	E_1	  19.0 - 31.0   19.5 - 30.5   26.0 - 24.0   37.0 - 13.0		  **			101.5/200
+# 4	E_1.5	11.5 - 38.5   15.0 - 35.0   24.0 - 26.0   28.0 - 22.0			  **		78.5/200
+# 5	E_2	  11.0 - 39.0   10.0 - 40.0   13.0 - 37.0   22.0 - 28.0				  **	56.0/200
+
+
+# -----------------------------------
+# Step 2: Initial Modelling (Bayesian Elo + Gaussian Process)
+# -----------------------------------
 
 #To-do:
 
 # Step 2: Initial Modelling
-  #extract the game results from the .pgn and save them in "tournament_results.csv"
   #run the Rating Model (Task 1) on the game results, with smaller variance
   #extract mean rating \mu and standard deviation \sigma for each engine.
   
@@ -83,6 +114,7 @@ pgn(games, file = pgn_filename)
 
 # Step3: Optimization - repeat this step for either a fixed amount of repeats,
     #or until the probability of improvement drops below a certain value
+    #after every iteration, print out the expected improvement and ask the user if he wants to continue
 
   #Calculate the Expected Improvement (see lecture 8) 
   #find x that maximizes the EI-function and initialize new engine with x LMRslope
