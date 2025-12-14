@@ -374,8 +374,8 @@ while(TRUE){
       book = current_openings,
       nr_rounds = n_rounds,
       repeated = TRUE,
-      tc_base = TC_BASE * 0.01, #temporary, to make tests quicker
-      tc_inc = TC_INC * 0.01,
+      tc_base = TC_BASE * 1000,
+      tc_inc = TC_INC * 1000,
       verbose = 1
     )
     
@@ -421,7 +421,7 @@ while(TRUE){
     noise.var = D$epsilon^2,
     upper = 0.3
   )
-  plot_filename <- paste0("optimization_iteration_", iteration, ".png")
+  plot_filename <- paste0("optimization_iteration_", iteration)
   grid_for_plot <- data.frame(x=seq(0, 2, length.out = 100))
   plot_gaussian_process(gp_model, D, grid_for_plot, plot_filename, iteration)
   
