@@ -270,22 +270,160 @@ plot_gaussian_process(gp_model, D, x_grid, "initial_plot", 0)
 # Step 3: Optimization loop
 # -----------------------------------
 
-#To-do:
+iteration <- 1
 
-# Step3: Optimization - repeat this step:
-    #after every iteration, print out the expected improvement and ask the user if he wants to continue
+x_grid_search <- seq(0, 2.0, by = 0.005)
 
-  #Calculate the Expected Improvement (see lecture 8) 
-  #find x that maximizes the EI-function and initialize new engine with x LMRslope
-  #pick a diverse subset of the previous engines (e.g. the two best engines till now,
-    #the median engine and the worst engine) and let the new engine play games, eg.
-    # 15 rounds each against the best two engines, and 5 rounds against the median & worst
-    # (this would take approx. 80mins)
-  #add the games to the .pgn, and the scores to the .csv
-
-  # run the Rating Model (Task 1) on all game results
+while(TRUE){
+  cat(paste0("\nIteration ", iteration, ":\n"))
   
-  # calculate and plot the new GP
-
-  # calculate the probability of improvement
+  y_best <- max(D$Y)
+  # Find the LMRslope with maximum Y (=rating)
+  best_engine_row <- D[which.max(D$Y), ]
+  best_slope <- as.numeric(sub("E_", "", best_engine_row$X))
   
+  # predict on search grid
+  pred_grid <- predict(gp_model, newdata = data.frame(x = x_grid_search), type = "UK")
+  
+  # calculate Expected Improvement
+  expected_improvement_values <- calculate_expected_improvement(pred_grid, y_best)
+  
+  # calculate Probability of Improvement
+  sigma <- pmax(pred_grid$sd, 1e-9) #avoid dividing by 0
+  Z <- (pred_grid$mean - y_best) / sigma
+  probability_of_improvement_values <- pnorm(Z)
+
+  # Find best candidate
+  best_idx <- which.max(expected_improvement_values)
+  best_x <- x_grid_search[best_idx]
+  max_ei <- expected_improvement_values[best_idx]
+  max_pi <- probability_of_improvement_values[best_idx]
+  
+  # User Interaction
+  cat(sprintf("Current Best LMR_slope candidate: %.2f \n", best_slope))
+  cat(sprintf("Proposed New Slope:  %.2f\n", best_x))
+  cat(sprintf("expected improvement:    %.4f\n", max_ei))
+  cat(sprintf("probability of improvement:    %.4f (%.1f%%)\n", max_pi, max_pi*100))
+  # Check thresholds
+  if (max_pi < 0.01) {
+    cat("(!) Probability of improvement is low (<1%).\n")
+  }
+  
+  user_input <- readline(prompt = "Proceed? (y/n): ")
+  if (tolower(user_input) != "y") {
+    cat("Optimization stopped by user.\n")
+    break
+  }
+  
+  #check if new slope already exists (or is numerically very close to an existing one)
+  if (any(abs(as.numeric(sub("E_", "", D$X)) - best_x) < 1e-4)) {
+    cat(sprintf("Slope %.2f already exists - stopping!\n", best_x))
+    break
+  }
+  
+  #pick a diverse subset of the previous LMRslope parameters: the two best engines,
+   #the median engine and the worst engine
+  D_sorted <- D[order(D$Y, decreasing = TRUE), ]
+  n_engines <- nrow(D_sorted)
+  # Identify the LMR_slope of the engines we want
+  best <- as.numeric(sub("E_", "",D_sorted$X[1])) #best engine
+  second_best<- as.numeric(sub("E_", "",D_sorted$X[2])) #second best engine
+  median <- as.numeric(sub("E_", "",D_sorted$X[ceiling(n_engines / 2)])) #median engine
+  worst <- as.numeric(sub("E_", "",D_sorted$X[n_engines])) #worst engine
+  
+  cat(sprintf("Picked subset: Best=%.2f, 2nd Best=%.2f, Median=%.2f, Worst=%.2f\n", 
+              best, second_best, median, worst))
+  
+  # Initialize New Engine
+  new_engine_name <- paste0("E_", best_x)
+  new_params <- list(NMP_intercept = 3, 
+                     NMP_slope = 0, 
+                     LMR_intercept = 1,
+                     RFP_intercept = -30, 
+                     RFP_slope = 150, 
+                     LMR_slope = best_x)
+  new_engine <- Engine(new_engine_name)
+  new_engine$set.params(new_params)
+  
+  ###########
+  #play games
+  ###########
+  opponents <- c(best, second_best, median, worst)
+  rounds_schedule <- c(15, 10, 5, 2)
+  # Loop through the subset indices (up to 4)
+  for (i in seq_along(opponents)) {
+    opponent_slope <- opponents[i]
+    n_rounds <- rounds_schedule[i]
+    
+    cat(sprintf("  Vs %s: %d rounds... ", opponent_slope, n_rounds))
+
+    # 2. Initialize Opponent Engine
+    opponent_engine <- Engine(paste0("E_", opponent_slope))
+    opponent_engine$set.params(list(
+      NMP_intercept = 3, NMP_slope = 0, LMR_intercept = 1,
+      RFP_intercept = -30, RFP_slope = 150, LMR_slope = opponent_slope
+    ))
+    
+    # generate random opening positions
+    current_openings <- opening_book[sample(length(opening_book), n_rounds)]
+    
+    #play match
+    match_games <- play.tournament(
+      new_engine,
+      opponent_engine,
+      book = current_openings,
+      nr_rounds = n_rounds,
+      repeated = TRUE,
+      tc_base = TC_BASE * 0.01, #temporary, to make tests quicker
+      tc_inc = TC_INC * 0.01,
+      verbose = 1
+    )
+    
+    # Append games to pgn
+    temp_pgn <- "temp_match_games.pgn"
+    pgn(match_games, file = temp_pgn)
+    file.append(pgn_filename, temp_pgn)
+    unlink(temp_pgn)
+  }
+  
+  #update .csv
+  ############
+  lines <- readLines(pgn_filename)
+  # Extract fields
+  whites  <- gsub('\\[White "|"\\]', "", grep('\\[White ".*"\\]', lines, value = TRUE))
+  blacks  <- gsub('\\[Black "|"\\]', "", grep('\\[Black ".*"\\]', lines, value = TRUE))
+  results <- gsub('\\[Result "|"\\]', "", grep('\\[Result ".*"\\]', lines, value = TRUE))
+  tc_val <- paste0(TC_BASE, "+", TC_INC)
+  time_controls <- rep(tc_val, length(results))
+  # Create dataframe with columns: white, black, result, timecontrol
+  results_df <- data.frame(
+    white = whites, 
+    black = blacks, 
+    result = results, 
+    timecontrol = time_controls, 
+    stringsAsFactors = FALSE
+  )
+  write.csv(results_df, csv_filename, row.names = FALSE, quote = FALSE)
+  
+  # Re-run Elo Model
+  ##################
+  
+  cat("Updating Elo Model ...\n")
+  D <- run_elo_model(csv_filename, stanmodel)
+  
+  # Update Gaussian Process and plotting
+  #########################
+  cat("Updating Gaussian Process...\n")
+  gp_model <- km(
+    design = data.frame(x = as.numeric(sub("E_", "", D$X))), 
+    response = D$Y, 
+    covtype = kernel_type, 
+    noise.var = D$epsilon^2,
+    upper = 0.3
+  )
+  plot_filename <- paste0("optimization_iteration_", iteration, ".png")
+  grid_for_plot <- data.frame(x=seq(0, 2, length.out = 100))
+  plot_gaussian_process(gp_model, D, grid_for_plot, plot_filename, iteration)
+  
+  iteration <- iteration + 1
+}
