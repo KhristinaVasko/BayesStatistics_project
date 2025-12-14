@@ -149,8 +149,8 @@ run_elo_model <- function(results_csv, stan_model){
     stan_model,
     data = stan_data,
     chains = 4,
-    iter = 4000,
-    warmup = 2000,
+    iter = 2000,
+    warmup = 1000,
     control = list(adapt_delta = 0.95)
   )
   
@@ -180,6 +180,7 @@ gp_model <- km(
   response = D$Y, 
   covtype = kernel_type, 
   noise.var = D$epsilon^2,
+  upper = 0.3 #upper bound for length-scale parameter
 )
 
 plot_gaussian_process <- function(gp, D, plot_output_name, iteration){

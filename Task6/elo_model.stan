@@ -16,39 +16,28 @@ model {
   // Ratings centered around 0 with SD 200
   rating ~ normal(0, 200);
 
+  //add additional constriction to make sure the mean rating is centered around 0
+  sum(rating) ~ normal(0, 1);	
+	
   // model draw rate as beta distributed, with mean 0.3
   draw_rate ~ beta(3, 7);
+  
+  vector[N] delta = rating[white] - rating[black];
+  vector[N] E = inv_logit(delta * log(10) / 400);
 
-  // --- Likelihood ---
+  // Likelihood
   for (n in 1:N) {
-    // Calculate White's Expected Score: 1 / (1 + 10^((Rb - Rw)/400))
-    real delta_rating = rating[white[n]] - rating[black[n]];
-    real expected_score = inv_logit(delta_rating * log(10) / 400);
+    // Math here is now simpler/faster
+    real p_win_raw = E[n] - 0.5 * draw_rate;
+    real p_loss_raw = 1.0 - E[n] - 0.5 * draw_rate;
 
-    // Derive probabilities for Win/Loss/Draw
-    // Logic: E = P(win) + 0.5 * P(draw)
-    // Therefore: P(win) approx E - 0.5 * draw_rate
-    real p_win_raw = expected_score - 0.5 * draw_rate;
-    real p_loss_raw = 1.0 - expected_score - 0.5 * draw_rate;
+    real p_win = fmax(1e-6, p_win_raw);
+    real p_loss = fmax(1e-6, p_loss_raw);
+    real total = p_win + draw_rate + p_loss;
 
-    // Safety: ensure non-negative (fmax from reference model)
-    real p_win = fmax(0.001, p_win_raw);
-    real p_loss = fmax(0.001, p_loss_raw);
-    
-    // Normalize probabilities so they sum to 1
-    real total_prob = p_win + draw_rate + p_loss;
-    real p_win_norm = p_win / total_prob;
-    real p_draw_norm = draw_rate / total_prob;
-    real p_loss_norm = p_loss / total_prob;
-
-    // Update log-probability based on result
-    if (score[n] == 1.0) {
-       target += log(p_win_norm);
-    } else if (score[n] == 0.5) {
-       target += log(p_draw_norm);
-    } else {
-       target += log(p_loss_norm);
-    }
+    if (score[n] == 1.0)      target += log(p_win / total);
+    else if (score[n] == 0.5) target += log(draw_rate / total);
+    else                      target += log(p_loss / total);
   }
 }
 
