@@ -167,9 +167,41 @@ The optimization process is visualized below:
     \label{fig:iter6}
 \end{figure}
 
---------------------------------\par
-I'm letting the loop run right now, will add further iterations and final best-guess later
-\par--------------------------------
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{optimization_iteration_7.png}
+    \caption{GP fit after Iteration 7.}
+    \label{fig:iter7}
+\end{figure}
+
+Our loop terminated during the $8$th iteration with:
+
+\begin{verbatim}
+Iteration 8:
+Current Best LMR_slope candidate: 0.245 
+Proposed New Slope:  0.245
+expected improvement:    0.1724
+probability of improvement:    0.0360 (3.6\%)
+\end{verbatim}
+
+The termination happened, because we specified in the code to terminate if the same value  is tested twice. In hindsight, since there are noisy measurements, it would have made sense to generate more games with the $0.245$ parameter, also in view of the Data after $7$ iterations:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[]{D_after_loop.png}
+    \caption{D after Iteration 7.}
+    \label{fig:D7}
+\end{figure}
+
+There are several parameters with ratings close to another, and still quite some variance. The proposed "best parameter" has positive score in all the mini-matches, except against E\_605:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[]{E_0245_results.png}
+    \caption{Results of "best" engine}
+    \label{fig:E_0245}
+\end{figure}
+
 
 \section{Code}
 Attached is the full code from our implementation:
