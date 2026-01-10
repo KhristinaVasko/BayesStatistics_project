@@ -1,0 +1,17 @@
+\section{Task 1: Tournament Ranking}
+\subsection{Task Description}
+We are given a file games.csv containing results of chess games between several chess engines. Our goal is to asign each engine an elo-rating relative to the pool of participants.
+\par The classic Elo system calculates the expected score of player $A$ against player $B$ with ratings $R_A$ and $R_B$ using the formula
+\begin{equation*}
+E_A = \frac{1}{1+10^{(R_B-R_A)/400}}.
+\end{equation*}
+The expected score is defined as the win rate of player $A$ plus half the draw rate when competing against player $B$.
+\subsection{How we did it}
+In our case, the ratings $R_A$ and $R_B$ of each engine pair are unknown. However, the rating differences can be calculated from the expected score:
+\begin{equation}\label{eq:rating_difference}
+R_B - R_A = \frac{400~ln(\frac{1}{E_A}-1)}{ln(10)}.
+\end{equation}
+As we have lots of game results at our disposal, we can approximate the expected scores based on these results. If we assume the expected scores to be normally distributed around the values which we calculate from the results, then the rating differences are also normally distributed and we can calculate the mean, if we plug the mean of the expected score into the above formula (\ref{eq:rating_difference}).
+\dots
+\subsection{Results}
+\subsection{Conclusion}
