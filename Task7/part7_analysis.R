@@ -419,8 +419,8 @@ games <- play.tournament(
   book = tournament_openings,
   nr_rounds = N_POSITIONS,
   repeated = TRUE,
-  tc_base = TC_BASE * 1000,  # Convert to microseconds
-  tc_inc = TC_INC * 1000,
+  tc_base = TC_BASE *  1000000,  # microseconds
+  tc_inc = TC_INC *  1000000,
   verbose = 1
 )
 
@@ -623,8 +623,7 @@ while(TRUE) {
   # Play gauntlet tournament (new_engine vs all opponents at once)
   cat(sprintf("Playing gauntlet tournament (%d rounds)...\n", rounds_per_opponent))
   match_games <- play.tournament(
-    new_engine,
-    opponent_engines,
+    c(list(new_engine), opponent_engines),
     book = current_openings,
     nr_rounds = rounds_per_opponent,
     nr_gauntlet = 1L,  # Only first engine (new_engine) plays vs all others
