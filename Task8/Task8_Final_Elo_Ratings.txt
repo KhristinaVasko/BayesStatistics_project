@@ -1,0 +1,15 @@
+[1] "--- TASK 8 FINAL RESULTS ---"
+[1] "Tournament Settings: 50 Rounds, Time Control: 10+0.1 (Simulated/Adjusted)"
+[1] "---------------------------------------------------"
+[1] "FINAL ESTIMATED ELO RATINGS (Posterior Means):"
+    Base    Opt1D    Opt2D    Tuned 
+2068.748 1993.178 1975.065 1965.171 
+[1] "---------------------------------------------------"
+[1] "DETAILED SUMMARY STATISTICS:"
+      Base          Tuned          Opt1D          Opt2D     
+ Min.   :1529   Min.   :1318   Min.   :1488   Min.   :1386  
+ 1st Qu.:1952   1st Qu.:1819   1st Qu.:1870   1st Qu.:1836  
+ Median :2059   Median :1962   Median :2006   Median :1964  
+ Mean   :2069   Mean   :1965   Mean   :1993   Mean   :1975  
+ 3rd Qu.:2189   3rd Qu.:2115   3rd Qu.:2126   3rd Qu.:2116  
+ Max.   :2581   Max.   :2585   Max.   :2515   Max.   :2604  
