@@ -1,17 +1,55 @@
 \section{Task 1: Tournament Ranking}
-\subsection{Task Description}
-We are given a file games.csv containing results of chess games between several chess engines. Our goal is to asign each engine an elo-rating relative to the pool of participants.
-\par The classic Elo system calculates the expected score of player $A$ against player $B$ with ratings $R_A$ and $R_B$ using the formula
-\begin{equation*}
-E_A = \frac{1}{1+10^{(R_B-R_A)/400}}.
-\end{equation*}
-The expected score is defined as the win rate of player $A$ plus half the draw rate when competing against player $B$.
-\subsection{How we did it}
-In our case, the ratings $R_A$ and $R_B$ of each engine pair are unknown. However, the rating differences can be calculated from the expected score:
-\begin{equation}\label{eq:rating_difference}
-R_B - R_A = \frac{400~ln(\frac{1}{E_A}-1)}{ln(10)}.
-\end{equation}
-As we have lots of game results at our disposal, we can approximate the expected scores based on these results. If we assume the expected scores to be normally distributed around the values which we calculate from the results, then the rating differences are also normally distributed and we can calculate the mean, if we plug the mean of the expected score into the above formula (\ref{eq:rating_difference}).
-\dots
+\subsection{Data}
+
+  The dataset consists of 862 chess games from \texttt{games.csv}, played between 6 engines (A, B, C, D, E, SM) on lichess.org. Each game record contains: \texttt{white}
+  (white player), \texttt{black} (black player), \texttt{result} (1-0, 1/2-1/2, or 0-1), and \texttt{timecontrol} (format \texttt{time+increment} in seconds).
+
+  All 15 possible pairings are represented in the dataset. For modeling, results were converted to numerical scores from white's perspective: wins = 1.0, draws = 0.5, losses =
+   0.0. Engine names were mapped to integer indices for computational efficiency.
+
+  \subsection{Modeling}
+
+  We employ a Bayesian Elo rating model to estimate engine strengths. For each engine $k \in \{1, \ldots, 6\}$, we estimate a latent rating $R_k$ with weakly informative prior
+   $R_k \sim \mathcal{N}(0, 200)$.
+
+  For each game $n$ with white player $w_n$ and black player $b_n$, the expected score follows the standard Elo formula:
+  \begin{equation}
+  E_n = \frac{1}{1 + 10^{(R_{b_n} - R_{w_n})/400}}
+  \end{equation}
+
+  The observed score $S_n \in \{0, 0.5, 1\}$ is modeled as $S_n \sim \mathcal{N}(E_n, 0.3)$, treating outcomes as noisy observations of expected scores. Absolute ratings are
+  computed as $R_k^{\text{abs}} = R_k + 2000$ for interpretation on the conventional Elo scale.
+
+  Posterior inference used Hamiltonian Monte Carlo via Stan with 4 chains of 2000 iterations each (1000 warmup, 1000 sampling) and adaptation parameter $\delta = 0.95$.
+
 \subsection{Results}
-\subsection{Conclusion}
+
+  \paragraph{Convergence Diagnostics}
+  All diagnostics confirm successful convergence: maximum $\hat{R} = 1.005$ (threshold: 1.1) and minimum effective sample size ratio = 0.129 (threshold: 0.1).
+
+  \paragraph{Rating Estimates}
+  Table~\ref{tab:ratings} shows the posterior rating estimates ranked by mean. Engine E clearly dominates with mean rating 2327, while engine D ranks last at 1758. The middle
+  tier (A, SM, C, B) shows overlapping credible intervals indicating some uncertainty in relative ordering.
+
+  \begin{table}[h]
+  \centering
+  \caption{Estimated Elo ratings with 95\% credible intervals}
+  \label{tab:ratings}
+  \begin{tabular}{clcccc}
+  \hline
+  \textbf{Rank} & \textbf{Engine} & \textbf{Mean} & \textbf{SD} & \textbf{2.5\%} & \textbf{97.5\%} \\
+  \hline
+  1 & E  & 2327.2 & 78.4 & 2177.4 & 2488.7 \\
+  2 & A  & 2067.9 & 78.4 & 1919.3 & 2224.5 \\
+  3 & SM & 2030.1 & 77.1 & 1879.9 & 2181.5 \\
+  4 & C  & 1937.0 & 80.7 & 1779.6 & 2093.4 \\
+  5 & B  & 1911.4 & 81.8 & 1752.4 & 2069.2 \\
+  6 & D  & 1757.9 & 79.8 & 1599.8 & 1917.7 \\
+  \hline
+  \end{tabular}
+  \end{table}
+
+  \paragraph{Pairwise Superiority}
+  We computed probabilities $P(R_i > R_j)$ from posterior samples. Using threshold $P > 0.95$ for "clear superiority," we find: Engine E dominates all others ($P \geq 0.999$);
+   engine A clearly outperforms B, C, D, and SM; engines SM, B, and C all clearly outperform D. The comparison B vs. C yields $P(\text{C} > \text{B}) = 0.727$, showing
+  moderate but not conclusive evidence.
