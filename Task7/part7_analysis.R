@@ -39,7 +39,7 @@ FIXED_PARAMS <- list(
   NMP_intercept = 3,
   NMP_slope = 0,
   LMR_intercept = 1,
-  LMR_slope = 0.245  # Optimal from Task 6
+  LMR_slope = 0.405  # Optimal from Task 6
 )
 
 # Optimization bounds
@@ -509,6 +509,9 @@ cat("========================================\n")
 cat("STARTING OPTIMIZATION LOOP\n")
 cat("========================================\n\n")
 
+# Set maximum iterations for automatic execution
+MAX_ITERATIONS <- 3  # Change this to 2 if you want faster execution
+
 iteration <- 1
 
 while(TRUE) {
@@ -542,16 +545,19 @@ while(TRUE) {
   cat(sprintf("Expected Improvement: %.4f\n", ei))
   cat(sprintf("Probability of Improvement: %.2f%%\n", pi * 100))
 
+  # Check stopping criteria
   if (pi < 0.01) {
-    cat("Warning: Low probability of improvement (<1%)\n")
-  }
-
-  # User interaction
-  user_input <- readline(prompt = "\nProceed with this candidate? (y/n): ")
-  if (tolower(user_input) != "y") {
-    cat("Optimization stopped by user.\n")
+    cat("\nLow probability of improvement (<1%) - stopping optimization!\n")
     break
   }
+
+  # Check iteration limit
+  if (iteration > MAX_ITERATIONS) {
+    cat(sprintf("\nReached maximum iterations (%d) - stopping optimization!\n", MAX_ITERATIONS))
+    break
+  }
+
+  cat("\nProceeding automatically...\n")
 
   # Check if candidate already exists (within tolerance)
   if (any(abs(param_values$RFP_intercept - candidate$RFP_intercept) < 1 &
@@ -628,8 +634,8 @@ while(TRUE) {
     nr_rounds = rounds_per_opponent,
     nr_gauntlet = 1L,  # Only first engine (new_engine) plays vs all others
     repeated = TRUE,
-    tc_base = TC_BASE * 1000,
-    tc_inc = TC_INC * 1000,
+    tc_base = TC_BASE * 1000000,
+    tc_inc = TC_INC * 1000000,
     verbose = 0  # Suppress output
   )
 
