@@ -146,8 +146,8 @@ live_sequential_test <- function(params_base, params_new, book,
     gc(verbose = FALSE)
     k <- k + 1
   }
-  engine_base$quit()
-  engine_new$quit()
+  rm(engine_base)
+  rm(engine_new)  
   return(list(decision = decision, final_mu = posterior$mean))
 }
 # 3. The Tuning Loop
