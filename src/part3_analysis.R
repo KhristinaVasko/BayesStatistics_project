@@ -1,4 +1,4 @@
-# PART 3
+# Part 3
 
 if (basename(getwd()) == "src") {
   setwd("..")
@@ -10,9 +10,9 @@ library(rstan)
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 
-cat("PART 3\n")
+cat("PART 3 (FIXED)\n")
 
-# 1. LOAD MODEL, DATA, ENGINE NAMES
+# 1. LOAD MODEL, DATA, ENGINE NAMES ------------------------------------------------
 
 fit_extended <- readRDS("outputs/part2/part2_fit.rds")
 load("outputs/part2/part2_results.RData")  # loads stan_data etc.
@@ -25,10 +25,10 @@ engine_names <- sort(get_players("data/games.csv"))
 K <- length(engine_names)
 cat("Loaded", K, "engines.\n")
 
-# 2. COMPUTE RATINGS AT 300+3 
+# 2. COMPUTE RATINGS AT 300+3 ------------------------------------------------------
 
-tc_target   <- 300 + 40 * 3 
-tstar       <- (tc_target - tc_mean) / tc_sd
+tc_target <- 300 + 40 * 3   # your mapping from 300+3 to "effective time"
+tstar     <- (tc_target - tc_mean) / tc_sd
 
 samples_base  <- rstan::extract(fit_extended, pars = "base_rating")$base_rating
 samples_slope <- rstan::extract(fit_extended, pars = "time_slope")$time_slope
@@ -37,11 +37,14 @@ S <- nrow(samples_base)
 ratings_tc <- samples_base + samples_slope * tstar  # S x K
 colnames(ratings_tc) <- engine_names
 
-# 3. TOURNAMENT STATE (A–E, SM) 
+# 3. TOURNAMENT STATE (A???E, SM) ----------------------------------------------------
 
 tournament_labels <- c("A", "B", "C", "D", "E", "SM")
 tournament_to_engine <- c(A = "A", B = "B", C = "C",
                           D = "D", E = "E", SM = "SM")
+
+# Fail fast if engine mapping doesn't match your learned engine names
+stopifnot(all(tournament_to_engine %in% engine_names))
 
 current_scores_mat <- matrix(c(
   NA, 3,   1.5, 4,   2,   2,    # A
@@ -55,15 +58,35 @@ dimnames = list(tournament_labels, tournament_labels))
 
 current_total_points <- rowSums(current_scores_mat, na.rm = TRUE)
 
-# 4. ESTIMATE DRAW RATE 
-games <- read_csv("data/games.csv", show_col_types = FALSE)
-draw_rate <- mean(games$result == "1/2-1/2", na.rm = TRUE)
-cat("Draw rate:", round(draw_rate, 3))
+# 4. ESTIMATE DRAW RATE (FILTERED TO 300+3) ---------------------------------------
 
-# 5. ELO EXPECTED SCORE + SIMULATION FUNCTION 
+games <- read_csv("data/games.csv", show_col_types = FALSE)
+
+games_3003 <- games %>% filter(timecontrol == "300+3")
+
+if (nrow(games_3003) == 0) {
+  warning("No 300+3 games found in data/games.csv. Falling back to overall draw rate.")
+  draw_rate <- mean(games$result == "1/2-1/2", na.rm = TRUE)
+} else {
+  draw_rate <- mean(games_3003$result == "1/2-1/2", na.rm = TRUE)
+}
+
+cat("Draw rate (300+3):", round(draw_rate, 3), "\n")
+
+# 5. ELO EXPECTED SCORE + SIMULATION FUNCTION --------------------------------------
 
 elo_expected_score <- function(Ri, Rj) {
   1 / (1 + 10 ^ ((Rj - Ri) / 400))
+}
+
+rank_with_random_tiebreak <- function(points_vec) {
+  # Adds tiny noise to break ties uniformly at random (avoids alphabetical/index bias)
+  u <- runif(length(points_vec), min = 0, max = 1e-9)
+  ord <- order(points_vec + u, decreasing = TRUE)
+  rk <- integer(length(points_vec))
+  rk[ord] <- seq_along(points_vec)
+  names(rk) <- names(points_vec)
+  rk
 }
 
 simulate_one_tournament <- function(ratings_all,
@@ -72,6 +95,7 @@ simulate_one_tournament <- function(ratings_all,
                                     current_points,
                                     draw_rate,
                                     n_games_remaining_pair = 6) {
+  
   ratings_tournament <- ratings_all[tournament_to_engine]
   names(ratings_tournament) <- tournament_labels
   
@@ -79,6 +103,7 @@ simulate_one_tournament <- function(ratings_all,
   
   for (i in 1:(length(tournament_labels) - 1)) {
     for (j in (i + 1):length(tournament_labels)) {
+      
       ei <- tournament_labels[i]
       ej <- tournament_labels[j]
       
@@ -105,25 +130,23 @@ simulate_one_tournament <- function(ratings_all,
     }
   }
   
-  ord  <- order(points, decreasing = TRUE)
-  rank <- integer(length(points))
-  rank[ord] <- 1:length(points)
-  names(rank) <- names(points)
-  
+  rank <- rank_with_random_tiebreak(points)
   list(points = points, rank = rank)
 }
 
-# 6. MONTE CARLO SIMULATIONS
+# 6. MONTE CARLO SIMULATIONS (TIE-SAFE TOP2 EVENT) ---------------------------------
+
 set.seed(123)
 
 n_sims <- 5000
 sm_top2_count <- 0
 
-rank_counts <- matrix(0,
-                      nrow = length(tournament_labels),
-                      ncol = length(tournament_labels),
-                      dimnames = list(tournament_labels,
-                                      paste0("pos", 1:length(tournament_labels))))
+rank_counts <- matrix(
+  0,
+  nrow = length(tournament_labels),
+  ncol = length(tournament_labels),
+  dimnames = list(tournament_labels, paste0("pos", 1:length(tournament_labels)))
+)
 
 for (s in 1:n_sims) {
   idx <- sample(1:S, 1)
@@ -138,25 +161,26 @@ for (s in 1:n_sims) {
     n_games_remaining_pair = 6
   )
   
-  if (res$rank["SM"] <= 2) {
+  # "at least second place" => success if SM's points >= 2nd-highest points
+  top2_cutoff <- sort(res$points, decreasing = TRUE)[2]
+  if (res$points["SM"] >= top2_cutoff) {
     sm_top2_count <- sm_top2_count + 1
   }
   
   for (lab in tournament_labels) {
     pos <- res$rank[lab]
-    rank_counts[lab, paste0("pos", pos)] <-
-      rank_counts[lab, paste0("pos", pos)] + 1
+    rank_counts[lab, paste0("pos", pos)] <- rank_counts[lab, paste0("pos", pos)] + 1
   }
 }
 
-rank_probs    <- rank_counts / n_sims
-prob_sm_top2  <- sm_top2_count / n_sims
+rank_probs   <- rank_counts / n_sims
+prob_sm_top2 <- sm_top2_count / n_sims
 
-cat("P(SM in top 2) ≈", round(prob_sm_top2, 3), "\n")
+cat("P(SM in top 2) ???", round(prob_sm_top2, 3), "\n")
 cat("Rank probabilities:\n")
 print(round(rank_probs, 3))
 
-# 7. EXPECTED VALUE OF THE BET
+# 7. EXPECTED VALUE OF THE BET -----------------------------------------------------
 
 EV <- 100 * (2 * prob_sm_top2 - 1)
 cat("Expected value of bet:", round(EV, 2), "\n")
@@ -167,7 +191,7 @@ if (EV > 0) {
   cat("do not take the bet.\n")
 }
 
-# 8. SAVE RESULTS
+# 8. SAVE RESULTS ------------------------------------------------------------------
 
 if (!dir.exists("outputs/part3")) {
   dir.create("outputs/part3", recursive = TRUE)
@@ -177,7 +201,8 @@ sm_summary <- list(
   prob_sm_top2 = prob_sm_top2,
   EV_euros     = EV,
   rank_probs   = rank_probs,
-  n_sims       = n_sims
+  n_sims       = n_sims,
+  draw_rate    = draw_rate
 )
 
 save(sm_summary, file = "outputs/part3/part3_results.RData")
@@ -188,6 +213,5 @@ write_csv(
   "outputs/part3/part3_rank_probabilities.csv"
 )
 
-cat("PART 3 COMPLETE\n")
-
+cat("Part 3 Complete\n")
 
