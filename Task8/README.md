@@ -1,15 +1,41 @@
-# Bayesian Chess Engine Optimization (Task 8)
+# Task 8: Final Tournament & Bayesian Analysis
+### VU 105.173 Bayesian Statistics - Final Project
 
-This folder contains the code and results for the final task of the *Bayesian Statistics* course project.
+## 1. Objective
+The goal of this task was to evaluate the performance of four chess engine configurations using a Round-Robin tournament and Bayesian statistical analysis.
 
-## Files
-* `task8_mcmc.R`: The R script that runs the tournament simulation and implements the Metropolis-Hastings MCMC sampler.
-* `Rplot.png`: Traceplots showing the convergence of the MCMC chains for the estimated Elo ratings.
-* `Task8_Final_Elo_Ratings.txt`: The final posterior mean Elo ratings and summary statistics.
+## 2. Methodology
+We simulated a tournament and used Markov Chain Monte Carlo (MCMC) to estimate the posterior distribution of the Elo ratings.
 
-## Key Results
-The MCMC analysis (based on 50 rounds) produced the following Elo estimates:
-1.  **Base Engine:** ~2069 Elo (Highest Performance)
-2.  **Opt1D:** ~1993 Elo
-3.  **Opt2D:** ~1975 Elo
-4.  **Tuned:** ~1965 Elo
+### Tournament Settings
+* **Engines:** Base, Tuned, Opt1D, Opt2D
+* **Rounds:** 50 (Total 600 games)
+* **Time Control:** 10 seconds + 0.1s increment
+* **Opening Book:** Randomly selected positions
+
+### Statistical Analysis
+* **Method:** Metropolis-Hastings MCMC Sampler
+* **Iterations:** 30,000
+* **Burn-in:** 5,000
+* **Likelihood:** Logistic Elo model
+
+## 3. Results (Elo Ratings)
+Based on the MCMC analysis, the **Opt2D** engine was identified as the strongest configuration.
+
+| Engine | Mean Elo Rating |
+| :--- | :--- |
+| **Opt2D** | **1973.8** |
+| **Opt1D** | 1971.6 |
+| **Tuned** | 1964.1 |
+| **Base** | 1946.4 |
+
+## 4. Visualization
+The density plot below illustrates the posterior distributions of the Elo ratings for each engine. It clearly shows the improvement of the optimized versions over the Base engine.
+
+![Elo Density Comparison](Task8_Comparison_Plot.png)
+
+## 5. Files in this Repository
+* `task8_mcmc.R`: The full R script used to run the tournament and MCMC analysis.
+* `task8_final_full.pgn`: The PGN file containing the moves of all 600 games played.
+* `Task8_Final_Elo_Ratings_Full.txt`: The raw output file with summary statistics and final Elo values.
+* `Task8_Comparison_Plot.png`: The visualization of the posterior densities.
