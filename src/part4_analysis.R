@@ -158,7 +158,7 @@ sequential_test <- function(data, engine1, engine2, E_0, alpha, beta) {
   
   # Initialize prior: Delta ~ N(0, 2*(200^2))
   prior_mean <- 0
-  prior_var <- 2 * (200^2)
+  prior_var <- 2 * (10^2)
   
   # Extract results from new engine's perspective
   results <- as.numeric(games$new_wins)
@@ -184,7 +184,7 @@ sequential_test <- function(data, engine1, engine2, E_0, alpha, beta) {
       prior_var, 
       results_so_far,
       stan_model_seq,
-      chains=1,
+      chains=4,
       iterations=1000,
       warmup=500)
     posterior_mean <- posterior$mean
@@ -265,7 +265,6 @@ for (pair in pairs) {
   cat(sprintf("  Games played: %d / %d\n", result$games_played, result$total_games_available))
   cat(sprintf("  Total score after games played: %.f:%.f\n", total_score_after_games_played, result$games_played-total_score_after_games_played))
   cat(sprintf("  Total score over all games: %.f:%.f\n", total_score_all_games, result$total_games_available- total_score_all_games))
-  cat(sprintf("  Final posterior mean (Delta): %.2f\n", result$final_posterior_mean))
   cat(sprintf("  Final reject prob: %.4f\n", result$final_reject_prob))
   cat(sprintf("  Final accept prob: %.4f\n\n", result$final_accept_prob))
 }

@@ -1,5 +1,23 @@
 \section{Task 4: Sequential Testing}
 \subsection{Task Description}
+In this task, we develop sequential testing, which enables us to reach decisions about whether a modified engine is better than its predecessor based on the result of 'just enough' games between these two engines. We test this approach on the results provided in the \textit{games.csv} file.
 \subsection{How we did it}
+We compare two engines $E_{new}$ and $E_{base}$ and want to test our Nullhypotheses:
+\begin{equation}
+H_0:~\Delta \geq E_0,
+\end{equation}
+where $\Delta:= R_{new} - R_{base}$ and $E_0$ ist the improvement difference threshold, which we set to $10$ elo points. We want to reject $H_0$, if $P(\Delta < E_0) < \alpha$, with $\alpha := 0.05$, and accept $H_0$ if $P(\Delta \geq E_0) > \beta$, with $\beta := 0.95$. We modified the Stan-Elomodel from Task 1 slightly:
+\begin{itemize}
+\item Instead of initializing a fixed prior in the stan program, we allow the calling function to pass the prior mean and prior standard deviation. 
+\item Instead of using a fixed draw rate of $0.3$, we model the draw rate as a Beta-distributed function, initalizing it as $Beta(3,7)$  (which is centered at $0.3$). 
+\end{itemize}
+\par Let $r_k$ be the result of the $k$-th game between the two engines and assume we know the results $r_1, \dots, r_n$. We proceed as follows:
+\begin{itemize}
+\item Initialize the prior mean to be $0$ and the prior variance to be $50$ (we expect some rating difference when tweaking our engines parameters, but not a huge rating difference, as with completely different engines).
+\item Sample from the posterior of $\Delta$ using the Stan-Model initalized with the the prior mean and variance, and the results $r_1, \dots, r_n$.
+\item Calculate the reject-probability based on the obtained $\Delta$. Decide, if we want to continue or not based on the acceptance conditions.
+\end{itemize}
 \subsection{Results}
+We applied this procedure to all possible engine pairings from the \textit{games.csv}-file, simulating a sequence of games in the order the games appear in the file. As we chose to accept/reject the hypotheses only at a very high probability, we did not reach a decision for most of the pairings, but only for the pairings where the rating difference estimated from task 1 was quite high. Here are the complete results:
+\dots.
 \subsection{Conclusion}
