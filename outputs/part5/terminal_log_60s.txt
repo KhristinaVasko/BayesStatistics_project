@@ -1,0 +1,327 @@
+
+60 seconds 1 second increase
+32 games max
+
+--- ITERATION 1: Tuning LMR_slope (0.00 -> 1.40) ---
+  G1: Score 1.0 | P(Delta >= 5) = 0.826 | continue
+  G2: Score 0.0 | P(Delta >= 5) = 0.456 | continue
+  G3: Score 0.5 | P(Delta >= 5) = 0.498 | continue
+  G4: Score 0.0 | P(Delta >= 5) = 0.298 | continue
+  G5: Score 0.5 | P(Delta >= 5) = 0.272 | continue
+  G6: Score 0.0 | P(Delta >= 5) = 0.193 | continue
+  G7: Score 0.0 | P(Delta >= 5) = 0.097 | reject_H0
+
+--- ITERATION 2: Tuning NMP_minDepth (3.00 -> 5.91) ---
+  G1: Score 1.0 | P(Delta >= 5) = 0.817 | continue
+  G2: Score 0.5 | P(Delta >= 5) = 0.818 | continue
+  G3: Score 1.0 | P(Delta >= 5) = 0.911 | continue
+  G4: Score 0.0 | P(Delta >= 5) = 0.686 | continue
+  G5: Score 0.5 | P(Delta >= 5) = 0.688 | continue
+  G6: Score 0.0 | P(Delta >= 5) = 0.475 | continue
+  G7: Score 1.0 | P(Delta >= 5) = 0.632 | continue
+  G8: Score 1.0 | P(Delta >= 5) = 0.766 | continue
+  G9: Score 1.0 | P(Delta >= 5) = 0.842 | continue
+  G10: Score 0.5 | P(Delta >= 5) = 0.833 | continue
+  G11: Score 0.5 | P(Delta >= 5) = 0.842 | continue
+  G12: Score 0.0 | P(Delta >= 5) = 0.745 | continue
+  G13: Score 1.0 | P(Delta >= 5) = 0.814 | continue
+  G14: Score 0.0 | P(Delta >= 5) = 0.690 | continue
+  G15: Score 1.0 | P(Delta >= 5) = 0.786 | continue
+  G16: Score 0.0 | P(Delta >= 5) = 0.681 | continue
+  G17: Score 0.5 | P(Delta >= 5) = 0.668 | continue
+  G18: Score 1.0 | P(Delta >= 5) = 0.766 | continue
+  G19: Score 0.0 | P(Delta >= 5) = 0.680 | continue
+  G20: Score 0.0 | P(Delta >= 5) = 0.585 | continue
+  G21: Score 0.5 | P(Delta >= 5) = 0.590 | continue
+  G22: Score 0.5 | P(Delta >= 5) = 0.539 | continue
+  G23: Score 1.0 | P(Delta >= 5) = 0.669 | continue
+  G24: Score 0.0 | P(Delta >= 5) = 0.567 | continue
+  G25: Score 0.5 | P(Delta >= 5) = 0.557 | continue
+  G26: Score 0.0 | P(Delta >= 5) = 0.463 | continue
+  G27: Score 1.0 | P(Delta >= 5) = 0.568 | continue
+  G28: Score 0.5 | P(Delta >= 5) = 0.539 | continue
+  G29: Score 0.0 | P(Delta >= 5) = 0.477 | continue
+  G30: Score 0.0 | P(Delta >= 5) = 0.380 | continue
+  G31: Score 0.5 | P(Delta >= 5) = 0.380 | continue
+  G32: Score 0.5 | P(Delta >= 5) = 0.371 | reject_H0
+
+--- ITERATION 3: Tuning RFP_slope (0.00 -> 137.98) ---
+  G1: Score 0.5 | P(Delta >= 5) = 0.494 | continue
+  G2: Score 1.0 | P(Delta >= 5) = 0.823 | continue
+  G3: Score 1.0 | P(Delta >= 5) = 0.914 | continue
+  G4: Score 0.5 | P(Delta >= 5) = 0.912 | continue
+  G5: Score 0.0 | P(Delta >= 5) = 0.680 | continue
+  G6: Score 0.0 | P(Delta >= 5) = 0.469 | continue
+  G7: Score 0.5 | P(Delta >= 5) = 0.512 | continue
+  G8: Score 0.0 | P(Delta >= 5) = 0.318 | continue
+  G9: Score 0.5 | P(Delta >= 5) = 0.319 | continue
+  G10: Score 0.0 | P(Delta >= 5) = 0.204 | continue
+  G11: Score 0.5 | P(Delta >= 5) = 0.217 | continue
+  G12: Score 1.0 | P(Delta >= 5) = 0.358 | continue
+  G13: Score 1.0 | P(Delta >= 5) = 0.491 | continue
+  G14: Score 0.0 | P(Delta >= 5) = 0.336 | continue
+  G15: Score 0.5 | P(Delta >= 5) = 0.339 | continue
+  G16: Score 0.5 | P(Delta >= 5) = 0.362 | continue
+  G17: Score 1.0 | P(Delta >= 5) = 0.473 | continue
+  G18: Score 0.0 | P(Delta >= 5) = 0.358 | continue
+  G19: Score 0.0 | P(Delta >= 5) = 0.251 | continue
+  G20: Score 0.0 | P(Delta >= 5) = 0.179 | reject_H0
+
+--- ITERATION 4: Tuning NMP_intercept (3.00 -> 4.13) ---
+  G1: Score 0.5 | P(Delta >= 5) = 0.485 | continue
+  G2: Score 0.0 | P(Delta >= 5) = 0.164 | continue
+  G3: Score 1.0 | P(Delta >= 5) = 0.500 | continue
+  G4: Score 0.0 | P(Delta >= 5) = 0.290 | continue
+  G5: Score 1.0 | P(Delta >= 5) = 0.475 | continue
+  G6: Score 0.0 | P(Delta >= 5) = 0.329 | continue
+  G7: Score 0.0 | P(Delta >= 5) = 0.215 | continue
+  G8: Score 0.0 | P(Delta >= 5) = 0.121 | continue
+  G9: Score 0.0 | P(Delta >= 5) = 0.081 | reject_H0
+
+--- ITERATION 5: Tuning LMR_slope (0.00 -> 0.85) ---
+  G1: Score 1.0 | P(Delta >= 5) = 0.805 | continue
+  G2: Score 0.0 | P(Delta >= 5) = 0.481 | continue
+  G3: Score 1.0 | P(Delta >= 5) = 0.687 | continue
+  G4: Score 0.0 | P(Delta >= 5) = 0.493 | continue
+  G5: Score 1.0 | P(Delta >= 5) = 0.648 | continue
+  G6: Score 0.0 | P(Delta >= 5) = 0.474 | continue
+  G7: Score 0.5 | P(Delta >= 5) = 0.477 | continue
+  G8: Score 1.0 | P(Delta >= 5) = 0.611 | continue
+  G9: Score 1.0 | P(Delta >= 5) = 0.735 | continue
+  G10: Score 0.0 | P(Delta >= 5) = 0.607 | continue
+  G11: Score 0.5 | P(Delta >= 5) = 0.619 | continue
+  G12: Score 1.0 | P(Delta >= 5) = 0.735 | continue
+  G13: Score 1.0 | P(Delta >= 5) = 0.805 | continue
+  G14: Score 0.0 | P(Delta >= 5) = 0.685 | continue
+  G15: Score 0.5 | P(Delta >= 5) = 0.703 | continue
+  G16: Score 0.0 | P(Delta >= 5) = 0.591 | continue
+  G17: Score 1.0 | P(Delta >= 5) = 0.673 | continue
+  G18: Score 0.5 | P(Delta >= 5) = 0.676 | continue
+  G19: Score 1.0 | P(Delta >= 5) = 0.750 | continue
+  G20: Score 0.0 | P(Delta >= 5) = 0.648 | continue
+  G21: Score 1.0 | P(Delta >= 5) = 0.726 | continue
+  G22: Score 0.0 | P(Delta >= 5) = 0.650 | continue
+  G23: Score 1.0 | P(Delta >= 5) = 0.711 | continue
+  G24: Score 0.0 | P(Delta >= 5) = 0.647 | continue
+  G25: Score 1.0 | P(Delta >= 5) = 0.711 | continue
+  G26: Score 0.5 | P(Delta >= 5) = 0.715 | continue
+  G27: Score 1.0 | P(Delta >= 5) = 0.782 | continue
+  G28: Score 0.0 | P(Delta >= 5) = 0.686 | continue
+  G29: Score 0.5 | P(Delta >= 5) = 0.701 | continue
+  G30: Score 0.5 | P(Delta >= 5) = 0.682 | continue
+  G31: Score 1.0 | P(Delta >= 5) = 0.777 | continue
+  G32: Score 1.0 | P(Delta >= 5) = 0.805 | accept_H0
+
+--- ITERATION 6: Tuning NMP_minDepth (3.00 -> 1.79) ---
+  G1: Score 1.0 | P(Delta >= 5) = 0.815 | continue
+  G2: Score 0.0 | P(Delta >= 5) = 0.505 | continue
+  G3: Score 0.5 | P(Delta >= 5) = 0.471 | continue
+  G4: Score 0.5 | P(Delta >= 5) = 0.467 | continue
+  G5: Score 0.5 | P(Delta >= 5) = 0.481 | continue
+  G6: Score 0.0 | P(Delta >= 5) = 0.308 | continue
+  G7: Score 1.0 | P(Delta >= 5) = 0.485 | continue
+  G8: Score 0.0 | P(Delta >= 5) = 0.313 | continue
+  G9: Score 1.0 | P(Delta >= 5) = 0.475 | continue
+  G10: Score 0.0 | P(Delta >= 5) = 0.363 | continue
+  G11: Score 0.0 | P(Delta >= 5) = 0.222 | continue
+  G12: Score 0.5 | P(Delta >= 5) = 0.236 | continue
+  G13: Score 1.0 | P(Delta >= 5) = 0.379 | continue
+  G14: Score 1.0 | P(Delta >= 5) = 0.464 | continue
+  G15: Score 1.0 | P(Delta >= 5) = 0.585 | continue
+  G16: Score 0.0 | P(Delta >= 5) = 0.478 | continue
+  G17: Score 1.0 | P(Delta >= 5) = 0.571 | continue
+  G18: Score 0.5 | P(Delta >= 5) = 0.564 | continue
+  G19: Score 1.0 | P(Delta >= 5) = 0.672 | continue
+  G20: Score 0.5 | P(Delta >= 5) = 0.672 | continue
+  G21: Score 1.0 | P(Delta >= 5) = 0.743 | continue
+  G22: Score 0.5 | P(Delta >= 5) = 0.753 | continue
+  G23: Score 1.0 | P(Delta >= 5) = 0.815 | continue
+  G24: Score 0.5 | P(Delta >= 5) = 0.821 | continue
+  G25: Score 1.0 | P(Delta >= 5) = 0.868 | continue
+  G26: Score 0.5 | P(Delta >= 5) = 0.864 | continue
+  G27: Score 1.0 | P(Delta >= 5) = 0.913 | continue
+  G28: Score 0.0 | P(Delta >= 5) = 0.847 | continue
+  G29: Score 1.0 | P(Delta >= 5) = 0.901 | continue
+  G30: Score 0.5 | P(Delta >= 5) = 0.881 | continue
+  G31: Score 1.0 | P(Delta >= 5) = 0.927 | continue
+  G32: Score 0.0 | P(Delta >= 5) = 0.860 | accept_H0
+
+--- ITERATION 7: Tuning NMP_minDepth (1.79 -> 3.54) ---
+  G1: Score 1.0 | P(Delta >= 5) = 0.805 | continue
+  G2: Score 0.0 | P(Delta >= 5) = 0.462 | continue
+  G3: Score 1.0 | P(Delta >= 5) = 0.670 | continue
+  G4: Score 0.5 | P(Delta >= 5) = 0.659 | continue
+  G5: Score 0.5 | P(Delta >= 5) = 0.658 | continue
+  G6: Score 0.5 | P(Delta >= 5) = 0.668 | continue
+  G7: Score 1.0 | P(Delta >= 5) = 0.782 | continue
+  G8: Score 0.0 | P(Delta >= 5) = 0.638 | continue
+  G9: Score 1.0 | P(Delta >= 5) = 0.768 | continue
+  G10: Score 0.5 | P(Delta >= 5) = 0.754 | continue
+  G11: Score 1.0 | P(Delta >= 5) = 0.846 | continue
+  G12: Score 0.5 | P(Delta >= 5) = 0.834 | continue
+  G13: Score 0.5 | P(Delta >= 5) = 0.845 | continue
+  G14: Score 1.0 | P(Delta >= 5) = 0.901 | continue
+  G15: Score 0.5 | P(Delta >= 5) = 0.900 | continue
+  G16: Score 0.5 | P(Delta >= 5) = 0.905 | continue
+  G17: Score 1.0 | P(Delta >= 5) = 0.937 | continue
+  G18: Score 0.0 | P(Delta >= 5) = 0.868 | continue
+  G19: Score 1.0 | P(Delta >= 5) = 0.924 | continue
+  G20: Score 0.5 | P(Delta >= 5) = 0.919 | continue
+  G21: Score 0.5 | P(Delta >= 5) = 0.916 | continue
+  G22: Score 0.0 | P(Delta >= 5) = 0.843 | continue
+  G23: Score 0.0 | P(Delta >= 5) = 0.767 | continue
+  G24: Score 0.5 | P(Delta >= 5) = 0.779 | continue
+  G25: Score 0.5 | P(Delta >= 5) = 0.769 | continue
+  G26: Score 0.0 | P(Delta >= 5) = 0.666 | continue
+  G27: Score 1.0 | P(Delta >= 5) = 0.747 | continue
+  G28: Score 0.0 | P(Delta >= 5) = 0.636 | continue
+  G29: Score 0.5 | P(Delta >= 5) = 0.631 | continue
+  G30: Score 0.5 | P(Delta >= 5) = 0.667 | continue
+  G31: Score 0.5 | P(Delta >= 5) = 0.642 | continue
+  G32: Score 0.5 | P(Delta >= 5) = 0.653 | reject_H0
+
+--- ITERATION 8: Tuning RFP_intercept (70000.00 -> 161074.19) ---
+  G1: Score 1.0 | P(Delta >= 5) = 0.817 | continue
+  G2: Score 0.0 | P(Delta >= 5) = 0.482 | continue
+  G3: Score 0.5 | P(Delta >= 5) = 0.503 | continue
+  G4: Score 0.5 | P(Delta >= 5) = 0.502 | continue
+  G5: Score 0.5 | P(Delta >= 5) = 0.496 | continue
+  G6: Score 0.0 | P(Delta >= 5) = 0.303 | continue
+  G7: Score 1.0 | P(Delta >= 5) = 0.473 | continue
+  G8: Score 0.0 | P(Delta >= 5) = 0.301 | continue
+  G9: Score 0.5 | P(Delta >= 5) = 0.321 | continue
+  G10: Score 0.5 | P(Delta >= 5) = 0.350 | continue
+  G11: Score 1.0 | P(Delta >= 5) = 0.468 | continue
+  G12: Score 0.0 | P(Delta >= 5) = 0.332 | continue
+  G13: Score 1.0 | P(Delta >= 5) = 0.458 | continue
+  G14: Score 0.5 | P(Delta >= 5) = 0.461 | continue
+  G15: Score 0.5 | P(Delta >= 5) = 0.469 | continue
+  G16: Score 0.0 | P(Delta >= 5) = 0.357 | continue
+  G17: Score 1.0 | P(Delta >= 5) = 0.456 | continue
+  G18: Score 0.0 | P(Delta >= 5) = 0.355 | continue
+  G19: Score 1.0 | P(Delta >= 5) = 0.485 | continue
+  G20: Score 0.5 | P(Delta >= 5) = 0.462 | continue
+  G21: Score 1.0 | P(Delta >= 5) = 0.580 | continue
+  G22: Score 0.0 | P(Delta >= 5) = 0.469 | continue
+  G23: Score 1.0 | P(Delta >= 5) = 0.568 | continue
+  G24: Score 0.0 | P(Delta >= 5) = 0.476 | continue
+  G25: Score 0.5 | P(Delta >= 5) = 0.462 | continue
+  G26: Score 0.5 | P(Delta >= 5) = 0.456 | continue
+  G27: Score 0.5 | P(Delta >= 5) = 0.481 | continue
+  G28: Score 0.0 | P(Delta >= 5) = 0.370 | continue
+  G29: Score 1.0 | P(Delta >= 5) = 0.470 | continue
+  G30: Score 0.0 | P(Delta >= 5) = 0.382 | continue
+  G31: Score 0.5 | P(Delta >= 5) = 0.367 | continue
+  G32: Score 0.0 | P(Delta >= 5) = 0.276 | reject_H0
+
+--- ITERATION 9: Tuning NMP_slope (0.00 -> 165.18) ---
+  G1: Score 0.5 | P(Delta >= 5) = 0.497 | continue
+  G2: Score 0.0 | P(Delta >= 5) = 0.162 | continue
+  G3: Score 0.5 | P(Delta >= 5) = 0.152 | continue
+  G4: Score 0.0 | P(Delta >= 5) = 0.086 | reject_H0
+
+--- ITERATION 10: Tuning NMP_intercept (3.00 -> 6.81) ---
+  G1: Score 1.0 | P(Delta >= 5) = 0.819 | continue
+  G2: Score 0.5 | P(Delta >= 5) = 0.839 | continue
+  G3: Score 0.5 | P(Delta >= 5) = 0.846 | continue
+  G4: Score 0.0 | P(Delta >= 5) = 0.464 | continue
+  G5: Score 0.0 | P(Delta >= 5) = 0.303 | continue
+  G6: Score 0.5 | P(Delta >= 5) = 0.274 | continue
+  G7: Score 1.0 | P(Delta >= 5) = 0.451 | continue
+  G8: Score 0.0 | P(Delta >= 5) = 0.309 | continue
+  G9: Score 1.0 | P(Delta >= 5) = 0.492 | continue
+  G10: Score 0.0 | P(Delta >= 5) = 0.331 | continue
+  G11: Score 0.0 | P(Delta >= 5) = 0.243 | continue
+  G12: Score 0.0 | P(Delta >= 5) = 0.146 | continue
+  G13: Score 1.0 | P(Delta >= 5) = 0.253 | continue
+  G14: Score 0.5 | P(Delta >= 5) = 0.263 | continue
+  G15: Score 1.0 | P(Delta >= 5) = 0.342 | continue
+  G16: Score 0.5 | P(Delta >= 5) = 0.337 | continue
+  G17: Score 0.5 | P(Delta >= 5) = 0.362 | continue
+  G18: Score 0.0 | P(Delta >= 5) = 0.261 | continue
+  G19: Score 1.0 | P(Delta >= 5) = 0.396 | continue
+  G20: Score 0.5 | P(Delta >= 5) = 0.370 | reject_H0
+
+--- ITERATION 11: Tuning RFP_slope (0.00 -> 22.20) ---
+  G1: Score 1.0 | P(Delta >= 5) = 0.814 | continue
+  G2: Score 0.5 | P(Delta >= 5) = 0.828 | continue
+  G3: Score 0.5 | P(Delta >= 5) = 0.845 | continue
+  G4: Score 0.0 | P(Delta >= 5) = 0.462 | continue
+  G5: Score 1.0 | P(Delta >= 5) = 0.681 | continue
+  G6: Score 0.0 | P(Delta >= 5) = 0.487 | continue
+  G7: Score 0.5 | P(Delta >= 5) = 0.480 | continue
+  G8: Score 0.5 | P(Delta >= 5) = 0.475 | continue
+  G9: Score 0.5 | P(Delta >= 5) = 0.473 | continue
+  G10: Score 0.0 | P(Delta >= 5) = 0.304 | continue
+  G11: Score 0.5 | P(Delta >= 5) = 0.325 | continue
+  G12: Score 0.5 | P(Delta >= 5) = 0.322 | continue
+  G13: Score 0.5 | P(Delta >= 5) = 0.314 | continue
+  G14: Score 0.5 | P(Delta >= 5) = 0.298 | continue
+  G15: Score 1.0 | P(Delta >= 5) = 0.462 | continue
+  G16: Score 0.5 | P(Delta >= 5) = 0.461 | continue
+  G17: Score 0.5 | P(Delta >= 5) = 0.464 | continue
+  G18: Score 0.5 | P(Delta >= 5) = 0.459 | continue
+  G19: Score 1.0 | P(Delta >= 5) = 0.626 | continue
+  G20: Score 0.5 | P(Delta >= 5) = 0.612 | continue
+  G21: Score 1.0 | P(Delta >= 5) = 0.721 | continue
+  G22: Score 0.0 | P(Delta >= 5) = 0.586 | continue
+  G23: Score 0.0 | P(Delta >= 5) = 0.460 | continue
+  G24: Score 0.0 | P(Delta >= 5) = 0.359 | continue
+  G25: Score 1.0 | P(Delta >= 5) = 0.462 | continue
+  G26: Score 1.0 | P(Delta >= 5) = 0.562 | continue
+  G27: Score 1.0 | P(Delta >= 5) = 0.683 | continue
+  G28: Score 0.0 | P(Delta >= 5) = 0.557 | continue
+  G29: Score 1.0 | P(Delta >= 5) = 0.641 | continue
+  G30: Score 0.0 | P(Delta >= 5) = 0.533 | continue
+  G31: Score 1.0 | P(Delta >= 5) = 0.642 | continue
+  G32: Score 1.0 | P(Delta >= 5) = 0.706 | accept_H0
+
+--- ITERATION 12: Tuning bigDelta (950.00 -> 2295.16) ---
+  G1: Score 0.5 | P(Delta >= 5) = 0.501 | continue
+  G2: Score 0.0 | P(Delta >= 5) = 0.166 | continue
+  G3: Score 1.0 | P(Delta >= 5) = 0.478 | continue
+  G4: Score 0.0 | P(Delta >= 5) = 0.292 | continue
+  G5: Score 1.0 | P(Delta >= 5) = 0.469 | continue
+  G6: Score 0.0 | P(Delta >= 5) = 0.342 | continue
+  G7: Score 1.0 | P(Delta >= 5) = 0.489 | continue
+  G8: Score 0.0 | P(Delta >= 5) = 0.334 | continue
+  G9: Score 0.5 | P(Delta >= 5) = 0.353 | continue
+  G10: Score 0.5 | P(Delta >= 5) = 0.355 | continue
+  G11: Score 1.0 | P(Delta >= 5) = 0.487 | continue
+  G12: Score 0.5 | P(Delta >= 5) = 0.473 | continue
+  G13: Score 0.5 | P(Delta >= 5) = 0.469 | continue
+  G14: Score 0.5 | P(Delta >= 5) = 0.482 | continue
+  G15: Score 0.5 | P(Delta >= 5) = 0.479 | continue
+  G16: Score 0.0 | P(Delta >= 5) = 0.343 | continue
+  G17: Score 0.5 | P(Delta >= 5) = 0.337 | continue
+  G18: Score 0.5 | P(Delta >= 5) = 0.352 | continue
+  G19: Score 1.0 | P(Delta >= 5) = 0.450 | continue
+  G20: Score 0.0 | P(Delta >= 5) = 0.353 | reject_H0
+
+Final Tuned Parameters found in Part 5:
+$NMP_minDepth
+[1] 1.788367
+
+$NMP_intercept
+[1] 3
+
+$NMP_slope
+[1] 0
+
+$LMR_intercept
+[1] 0
+
+$LMR_slope
+[1] 0.8505823
+
+$RFP_intercept
+[1] 70000
+
+$RFP_slope
+[1] 22.20158
+
+$ageing
+[1] 4
+
+$bigDelta
+[1] 950
